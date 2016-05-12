@@ -1,0 +1,43 @@
+{
+  "name": "react-beacon",
+  "version": "0.1.0",
+  "description": "Onboarding beacons for React",
+  "keywords": [
+    "react",
+    "onboarding",
+    "tooltip",
+    "user-tour"
+  ],
+  "main": "lib/index",
+  "homepage": "http://github.com/salsita/react-beacon",
+  "maintainers": [
+    "matthew@salsitasoft.com"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:salsita/react-beacon.git"
+  },
+  "license": "MIT",
+  "config": {
+    "port": 8017
+  },
+  "scripts": {
+    "build": "rc-tools run build",
+    "compile": "rc-tools run compile",
+    "start": "rc-tools run server",
+    "pub": "rc-tools run pub",
+    "karma": "rc-tools run karma",
+    "test": "rc-tools run test"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "rc-tools": "^5.3.5"
+  },
+  "dependencies": {
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
+    "react-onclickoutside": "^5.1.0",
+    "react-portal": "^2.1.2",
+    "react-portal-tooltip": "^1.0.6"
+  }
+}
