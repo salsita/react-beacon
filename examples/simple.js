@@ -23,16 +23,16 @@ class Test extends React.Component {
       {this.renderBlock('heading_top')}
       {this.renderBlock('heading_bottom')}
       <Beacon parent="#heading_left" position="left">
-        <tour-tooltip>This is a tooltip</tour-tooltip>
+        This is a tooltip
       </Beacon>
       <Beacon parent="#heading_right" position="right">
-        <tour-tooltip>This is a tooltip</tour-tooltip>
+        This is a tooltip
       </Beacon>
       <Beacon parent="#heading_top" position="top">
-        <tour-tooltip>This is a tooltip</tour-tooltip>
+        This is a tooltip
       </Beacon>
       <Beacon parent="#heading_bottom" position="bottom">
-        <tour-tooltip>This is a tooltip</tour-tooltip>
+        This is a tooltip
       </Beacon>
     </div>);
   }

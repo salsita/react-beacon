@@ -83,6 +83,8 @@ export default withClickOutside(class Beacon extends React.Component {
         style: { boxShadow: 'none' },
         arrowStyle: {}
       };
+      const oppositePositions = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
+      const tooltipClass = oppositePositions[position];
       return (
         <Portal isOpened>
           <Tooltip
@@ -92,7 +94,9 @@ export default withClickOutside(class Beacon extends React.Component {
             active={this.state.tooltipActive}
             position={position}
           >
-            {children}
+            <tour-tooltip class={tooltipClass}>
+              {children}
+            </tour-tooltip>
           </Tooltip>
         </Portal>
       );
