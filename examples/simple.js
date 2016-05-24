@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Beacon from 'react-beacon';
 
 class Test extends React.Component {
-  renderBlock(id) {
+  renderBlock(id, child) {
     const style = {
       height: '100px',
       width: '100px',
@@ -12,28 +12,32 @@ class Test extends React.Component {
       left: '200px',
       backgroundColor: 'red'
     };
-    return (<div id={id} style={style}>{id}</div>);
+    return (<div style={style}>{id}{child}</div>);
   }
 
   render() {
     return (<div>
       <h1>Beacon Example</h1>
-      {this.renderBlock('heading_left')}
-      {this.renderBlock('heading_right')}
-      {this.renderBlock('heading_top')}
-      {this.renderBlock('heading_bottom')}
-      <Beacon parent="#heading_left" position="left">
-        This is a tooltip
-      </Beacon>
-      <Beacon parent="#heading_right" position="right">
-        This is a tooltip
-      </Beacon>
-      <Beacon parent="#heading_top" position="top">
-        This is a tooltip
-      </Beacon>
-      <Beacon parent="#heading_bottom" position="bottom">
-        This is a tooltip
-      </Beacon>
+      {this.renderBlock('heading_left', (
+        <Beacon position="left" appRoot="__react-content">
+          This is a tooltip
+        </Beacon>
+      ))}
+      {this.renderBlock('heading_right', (
+        <Beacon position="right" appRoot="__react-content">
+          This is a tooltip
+        </Beacon>
+      ))}
+      {this.renderBlock('heading_top', (
+        <Beacon position="top" appRoot="__react-content">
+          This is a tooltip
+        </Beacon>
+      ))}
+      {this.renderBlock('heading_bottom', (
+        <Beacon position="bottom" appRoot="__react-content">
+          This is a tooltip
+        </Beacon>
+      ))}
     </div>);
   }
 }

@@ -24,7 +24,7 @@ tour-backdrop {
 tour-tooltip {
   position: relative;
   z-index: 999;
-  width: 250px;
+  max-width: 250px;
   background-color: #fff;
   color: #545454;
   border: 1px solid #ddd;
@@ -126,6 +126,44 @@ tour-tooltip {
     border-right: 7px solid #ddd;
   }
 
+  // Before, After
+
+  // Top Bottom
+  &.top.start:before,
+  &.top.start:after,
+  &.bottom.start:before,
+  &.bottom.start:after {
+    left: 0;
+    transform: none;
+  }
+
+  &.top.end:before,
+  &.top.end:after,
+  &.bottom.end:before,
+  &.bottom.end:after {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+
+  // Right Left
+  &.right.start:before,
+  &.right.start:after,
+  &.left.start:before,
+  &.left.start:after {
+    top: 0;
+    transform: none;
+  }
+
+  &.right.end:before,
+  &.right.end:after,
+  &.left.end:before,
+  &.left.end:after {
+    top: auto;
+    bottom: 0;
+    transform: none;
+  }
+
   p {
     margin-bottom: 15px;
   }
@@ -158,4 +196,50 @@ tour-tooltip {
     transform: scale(2.5);
     opacity: 0;
   }
+}
+
+.tour-highlighted {
+  transform-origin: 50% !important;
+  transform: scale(1.25) !important;
+}
+
+.tour-tooltip-overlay {
+  position: relative;
+  display: block;
+  will-change: transform, -webkit-filter;
+  transition: -webkit-filter 500ms ease-in;
+
+  &:after {
+    content: '';
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0);
+    will-change: background-color;
+    transition: background-color 500ms ease-in;
+  }
+
+  &.faded {
+    -webkit-filter: grayscale(1) blur(2px);
+
+    &:after {
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.6);
+    }
+  }
+}
+
+.animated-first {
+  transform: translateX(-10px);
+  transition: all 1s ease-in-out;
+  opacity: 0;
+}
+
+.animated-second {
+  transform: scale(1.2) translateX(0);
+  opacity: 1;
 }

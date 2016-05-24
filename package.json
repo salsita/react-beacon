@@ -37,7 +37,6 @@
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
     "react-onclickoutside": "^5.1.0",
-    "react-portal": "^2.1.2",
-    "react-portal-tooltip": "^1.0.6"
+    "react-portal": "^2.1.2"
   }
 }

@@ -10,8 +10,9 @@ describe('<Beacon />', () => {
   beforeEach(() => {
     ReactDOM.render(
       <div>
-        <span id="foo" />
-        <Beacon parent="#foo" position="left" >Tooltip</Beacon>
+        <span id="foo">
+          <Beacon appRoot="foo" position="left" >Tooltip</Beacon>
+        </span>
       </div>, div
     );
   });
@@ -29,6 +30,6 @@ describe('<Beacon />', () => {
     const beacon = document.getElementsByTagName('tour-beacon')[0];
     beacon.click();
     expect(document.getElementsByTagName('tour-beacon').length).to.equal(0);
-    expect(document.querySelector('.ToolTipPortal span')).not.to.be(null);
+    expect(document.getElementsByTagName('tour-tooltip').length).not.to.equal(0);
   });
 });
