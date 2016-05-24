@@ -26,7 +26,7 @@ tour-backdrop {
 tour-tooltip {
   position: relative;
   z-index: 999;
-  width: 250px;
+  max-width: 250px;
   background-color: #fff;
   color: #545454;
   border: 1px solid #ddd;
@@ -115,6 +115,40 @@ tour-tooltip.left:after {
   border-bottom: 7px solid transparent;
   border-right: 7px solid #ddd;
 }
+tour-tooltip.top.start:before,
+tour-tooltip.top.start:after,
+tour-tooltip.bottom.start:before,
+tour-tooltip.bottom.start:after {
+  left: 0;
+  -webkit-transform: none;
+          transform: none;
+}
+tour-tooltip.top.end:before,
+tour-tooltip.top.end:after,
+tour-tooltip.bottom.end:before,
+tour-tooltip.bottom.end:after {
+  left: auto;
+  right: 0;
+  -webkit-transform: none;
+          transform: none;
+}
+tour-tooltip.right.start:before,
+tour-tooltip.right.start:after,
+tour-tooltip.left.start:before,
+tour-tooltip.left.start:after {
+  top: 0;
+  -webkit-transform: none;
+          transform: none;
+}
+tour-tooltip.right.end:before,
+tour-tooltip.right.end:after,
+tour-tooltip.left.end:before,
+tour-tooltip.left.end:after {
+  top: auto;
+  bottom: 0;
+  -webkit-transform: none;
+          transform: none;
+}
 tour-tooltip p {
   margin-bottom: 15px;
 }
@@ -167,5 +201,50 @@ tour-tooltip .close {
     opacity: 0;
   }
 }
+.tour-highlighted {
+  -webkit-transform-origin: 50% !important;
+          transform-origin: 50% !important;
+  -webkit-transform: scale(1.25) !important;
+          transform: scale(1.25) !important;
+}
+.tour-tooltip-overlay {
+  position: relative;
+  display: block;
+  will-change: transform, -webkit-filter;
+  transition: -webkit-filter 500ms ease-in;
+}
+.tour-tooltip-overlay:after {
+  content: '';
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0);
+  will-change: background-color;
+  -webkit-transition: background-color 500ms ease-in;
+  transition: background-color 500ms ease-in;
+}
+.tour-tooltip-overlay.faded {
+  -webkit-filter: grayscale(1) blur(2px);
+}
+.tour-tooltip-overlay.faded:after {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+.animated-first {
+  -webkit-transform: translateX(-10px);
+          transform: translateX(-10px);
+  -webkit-transition: all 1s ease-in-out;
+  transition: all 1s ease-in-out;
+  opacity: 0;
+}
+.animated-second {
+  -webkit-transform: scale(1.2) translateX(0);
+          transform: scale(1.2) translateX(0);
+  opacity: 1;
+}
 
-/*# sourceMappingURL=simple.css.map*/
+/*# sourceMappingURL=common.css.map*/

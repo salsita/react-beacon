@@ -1,14 +1,12 @@
-webpackJsonp([1],{
-
-/***/ 0:
+webpackJsonp([0],[
+/* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(167);
+	module.exports = __webpack_require__(1);
 
 
 /***/ },
-
-/***/ 167:
+/* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44,13 +42,15 @@ webpackJsonp([1],{
 	    return _possibleConstructorReturn(this, _React$Component.apply(this, arguments));
 	  }
 	
-	  Test.prototype.renderBlock = function renderBlock(id, child) {
+	  Test.prototype.renderBlock = function renderBlock(id, left, child) {
 	    var style = {
-	      height: '100px',
-	      width: '100px',
-	      margin: '10px',
+	      height: '60px',
+	      width: '30px',
 	      position: 'relative',
-	      left: '200px',
+	      padding: 'none',
+	      margin: 'none',
+	      border: 'none',
+	      left: left + 'px',
 	      backgroundColor: 'red'
 	    };
 	    return _react2["default"].createElement(
@@ -70,24 +70,24 @@ webpackJsonp([1],{
 	        null,
 	        'Beacon Example'
 	      ),
-	      this.renderBlock('heading_left', _react2["default"].createElement(
+	      this.renderBlock('left', 0, _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'left', appRoot: '__react-content' },
+	        { position: 'top' },
 	        'This is a tooltip'
 	      )),
-	      this.renderBlock('heading_right', _react2["default"].createElement(
+	      this.renderBlock('left', 0, _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'right', appRoot: '__react-content' },
+	        { position: 'bottom' },
 	        'This is a tooltip'
 	      )),
-	      this.renderBlock('heading_top', _react2["default"].createElement(
+	      this.renderBlock('right', 470, _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'top', appRoot: '__react-content' },
+	        { position: 'top' },
 	        'This is a tooltip'
 	      )),
-	      this.renderBlock('heading_bottom', _react2["default"].createElement(
+	      this.renderBlock('right', 470, _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'bottom', appRoot: '__react-content' },
+	        { position: 'bottom' },
 	        'This is a tooltip'
 	      ))
 	    );
@@ -96,9 +96,14 @@ webpackJsonp([1],{
 	  return Test;
 	}(_react2["default"].Component);
 	
-	_reactDom2["default"].render(_react2["default"].createElement(Test, null), document.getElementById('__react-content'));
+	document.body.style = 'margin: 0px';
+	var contentDoc = document.getElementById('main_frame').contentDocument;
+	contentDoc.body.style = 'margin: 0px';
+	var root = contentDoc.body;
+	var container = contentDoc.createElement('div');
+	root.appendChild(container);
+	_reactDom2["default"].render(_react2["default"].createElement(Test, null), container);
 
 /***/ }
-
-});
-//# sourceMappingURL=simple.js.map
+]);
+//# sourceMappingURL=edges.js.map

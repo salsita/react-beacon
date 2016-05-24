@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>simple.js - example - react-beacon@0.3.0</title>
+  <title>edges.js - example - react-beacon@0.3.0</title>
   <meta name="viewport"
         content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <meta charset="utf-8"/>
@@ -269,13 +269,15 @@ import ReactDOM from 'react-dom';
 import Beacon from 'react-beacon';
 
 class Test extends React.Component {
-  renderBlock(id, child) {
+  renderBlock(id, left, child) {
     const style = {
-      height: '100px',
-      width: '100px',
-      margin: '10px',
+      height: '60px',
+      width: '30px',
       position: 'relative',
-      left: '200px',
+      padding: 'none',
+      margin: 'none',
+      border: 'none',
+      left: `${left}px`,
       backgroundColor: 'red'
     };
     return (&lt;div style={style}&gt;{id}{child}&lt;/div&gt;);
@@ -284,31 +286,21 @@ class Test extends React.Component {
   render() {
     return (&lt;div&gt;
       &lt;h1&gt;Beacon Example&lt;/h1&gt;
-      {this.renderBlock('heading_left', (
-        &lt;Beacon position="left" appRoot="__react-content"&gt;
-          This is a tooltip
-        &lt;/Beacon&gt;
-      ))}
-      {this.renderBlock('heading_right', (
-        &lt;Beacon position="right" appRoot="__react-content"&gt;
-          This is a tooltip
-        &lt;/Beacon&gt;
-      ))}
-      {this.renderBlock('heading_top', (
-        &lt;Beacon position="top" appRoot="__react-content"&gt;
-          This is a tooltip
-        &lt;/Beacon&gt;
-      ))}
-      {this.renderBlock('heading_bottom', (
-        &lt;Beacon position="bottom" appRoot="__react-content"&gt;
-          This is a tooltip
-        &lt;/Beacon&gt;
-      ))}
+      {this.renderBlock('left', 0, (&lt;Beacon position="top"&gt;This is a tooltip&lt;/Beacon&gt;))}
+      {this.renderBlock('left', 0, (&lt;Beacon position="bottom"&gt;This is a tooltip&lt;/Beacon&gt;))}
+      {this.renderBlock('right', 470, (&lt;Beacon position="top"&gt;This is a tooltip&lt;/Beacon&gt;))}
+      {this.renderBlock('right', 470, (&lt;Beacon position="bottom"&gt;This is a tooltip&lt;/Beacon&gt;))}
     &lt;/div&gt;);
   }
 }
 
-ReactDOM.render(&lt;Test/&gt;, document.getElementById('__react-content'));
+document.body.style = 'margin: 0px';
+const contentDoc = document.getElementById('main_frame').contentDocument;
+contentDoc.body.style = 'margin: 0px';
+const root = contentDoc.body;
+const container = contentDoc.createElement('div');
+root.appendChild(container);
+ReactDOM.render(&lt;Test/&gt;, container);
 </code></pre></div>
   </div>
   <a href="http://github.com/salsita/react-beacon">
@@ -319,7 +311,7 @@ ReactDOM.render(&lt;Test/&gt;, document.getElementById('__react-content'));
   </a>
   
   <script src="common.js?nowrap"></script>
-  <script src="simple.js?nowrap"></script>
+  <script src="edges.js?nowrap"></script>
 </body>
 
 </html>
