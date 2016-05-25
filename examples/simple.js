@@ -3,12 +3,12 @@ webpackJsonp([1],{
 /***/ 0:
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(167);
+	module.exports = __webpack_require__(174);
 
 
 /***/ },
 
-/***/ 167:
+/***/ 174:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -72,22 +72,22 @@ webpackJsonp([1],{
 	      ),
 	      this.renderBlock('heading_left', _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'left', appRoot: '__react-content' },
-	        'This is a tooltip'
+	        { position: 'left', persistent: true },
+	        'This is a left tooltip'
 	      )),
 	      this.renderBlock('heading_right', _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'right', appRoot: '__react-content' },
-	        'This is a tooltip'
+	        { position: 'right', persistent: true },
+	        'This is a right tooltip'
 	      )),
 	      this.renderBlock('heading_top', _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'top', appRoot: '__react-content' },
+	        { position: 'top' },
 	        'This is a tooltip'
 	      )),
 	      this.renderBlock('heading_bottom', _react2["default"].createElement(
 	        _reactBeacon2["default"],
-	        { position: 'bottom', appRoot: '__react-content' },
+	        { position: 'bottom' },
 	        'This is a tooltip'
 	      ))
 	    );
@@ -96,7 +96,9 @@ webpackJsonp([1],{
 	  return Test;
 	}(_react2["default"].Component);
 	
-	_reactDom2["default"].render(_react2["default"].createElement(Test, null), document.getElementById('__react-content'));
+	var reactRoot = document.getElementById('__react-content');
+	reactRoot.className = 'tour-overlay';
+	_reactDom2["default"].render(_react2["default"].createElement(Test, null), reactRoot);
 
 /***/ }
 

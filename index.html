@@ -7,7 +7,7 @@
   <meta charset="utf-8"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css" rel="stylesheet"/>
-  <title>react-beacon@0.3.0 - Onboarding beacons for React</title>
+  <title>react-beacon@0.4.0 - Onboarding beacons for React</title>
   <style>
     @font-face {
       font-family: octicons-anchor;
@@ -737,7 +737,7 @@
 
 <body>
 <div class="header">
-  <h1>react-beacon@0.3.0</h1>
+  <h1>react-beacon@0.4.0</h1>
 </div>
 <div class="examples">
   <h3>EXAMPLES</h3>
@@ -760,8 +760,17 @@
 <h2>Example<a id="user-content-example" name="example" class="anchor" aria-hidden="true" href="#example"><span class="octicon octicon-link"></span></a></h2><p><a href="http://localhost:8017/examples" title="null">http://localhost:8017/examples</a></p>
 <h3>Props<a id="user-content-props" name="props" class="anchor" aria-hidden="true" href="#props"><span class="octicon octicon-link"></span></a></h3><ul>
 <li><code>position</code>: top, right, bottom or left for tooltip to appear. Default to right</li>
-<li><code>parent</code>: the beacon will be placed over this element</li>
+<li><code>persistent</code>: see below</li>
 </ul>
+<h2>Persistence<a id="user-content-persistence" name="persistence" class="anchor" aria-hidden="true" href="#persistence"><span class="octicon octicon-link"></span></a></h2><p>If the <code>persistent</code> attribute is specified, the component will automatically remember whether the beacon has been
+clicked on. If it has already been clicked, it will not be displayed again since generally the user will only want
+to see an onboarding tooltip once.</p>
+<p>The state of each beacon is stored using a unique ID. If you just set <code>persistent</code> to <code>true</code>, a SHA-1 hash will
+be calculated from the beacon content and used as the key. This means that all beacons will have a unique key as
+long as they also have unique content. You can override this key by specifying some other truthy value for
+the <code>persistent</code> attribute.</p>
+<p>IndexedDB is used for storing the beacon state, so if some of your target browsers don&#39;t support IndexedDB,
+you should use a <a href="https://github.com/axemclion/IndexedDBShim" title="null">shim</a>.</p>
 <h2>Development<a id="user-content-development" name="development" class="anchor" aria-hidden="true" href="#development"><span class="octicon octicon-link"></span></a></h2><div class="highlight"><pre><code language="undefined">npm install
 npm start</code></pre></div><h2>License<a id="user-content-license" name="license" class="anchor" aria-hidden="true" href="#license"><span class="octicon octicon-link"></span></a></h2><p>react-beacon is released under the MIT license.</p>
 
