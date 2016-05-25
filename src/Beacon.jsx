@@ -1,21 +1,27 @@
 import React, { PropTypes } from 'react';
 import Portal from 'react-portal';
-const withClickOutside = require('react-onclickoutside');
+import sha1 from 'sha1';
+import withClickOutside from 'react-onclickoutside';
 
 import '../assets/style.less';
 
 const BEACON_HEIGHT = 30;
 const BEACON_WIDTH = 30;
 const TOOLTIP_MARGIN = 10;
-const TOOLTIP_OVERLAY_CLASS = 'tour-tooltip-overlay';
+const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
+const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
 
 export default withClickOutside(class Beacon extends React.Component {
 
   static propTypes = {
-    appRoot: PropTypes.string,
     position: PropTypes.string,
+    persistent: PropTypes.bool,
     children: PropTypes.node
+  }
+
+  static defaultProps = {
+    position: 'right'
   }
 
   constructor(props) {
@@ -27,27 +33,39 @@ export default withClickOutside(class Beacon extends React.Component {
       parentEl: null,
       tooltipHeight: 0,
       tooltipWidth: 0,
+      appRoot: null,
       appRootClassName: ''
     };
   }
 
-  componentDidMount() {
-    const appRoot = document.getElementById(this.props.appRoot);
-    const appRootClasses = appRoot.className.split(' ').filter(
-      className => className && className !== TOOLTIP_OVERLAY_CLASS
-    );
-    this.setState({ parentEl: this.refs.root.parentNode, appRootClasses });
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    this.updateState(prevProps, prevState);
-  }
-
-  componentWillUnmount() {
-    if (!document.getElementsByTagName('tour-tooltip').length) {
-      const appRootElement = document.getElementById(this.props.appRoot);
-      appRootElement.className = this.state.appRootClasses.join(' ');
+  componentWillMount() {
+    if (this.props.persistent) {
+      // Retrieve the state of the badge from the database
+      // If `persistent` is `true` (the default value) then we use the hash of the component's children
+      // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
+      const hash = this.props.persistent === true ? sha1(JSON.stringify(this.props.children)) : this.props.persistent;
+      const request = indexedDB.open('react-beacon');
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        db.createObjectStore('beacons');
+      };
+      request.onsuccess = () => {
+        this.setState({ database: request.result });
+        const transaction = this.state.database.transaction(['beacons']);
+        const objectStore = transaction.objectStore('beacons');
+        objectStore.get(hash).onsuccess = (event) => {
+          if (!event.target.result) {
+            this.setState({ hash });
+          }
+        };
+      };
     }
+  }
+
+  componentDidMount() {
+    const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
+    const appRootClassName = appRoot && appRoot.className;
+    this.setState({ parentEl: this.refs.root.parentNode, appRoot, appRootClassName });
   }
 
   getParentBounds() {
@@ -93,14 +111,14 @@ export default withClickOutside(class Beacon extends React.Component {
     // Adjust start upwards if it is too low
     if (start < boundStart) {
       return {
-        [name]: boundStart,
-        className: `${className} start`
+        [name]: boundStart + TOOLTIP_MARGIN,
+        className: `${className} tour-start`
       };
     // Or adjust it downwards if it is too high
     } else if ((start + size) > (boundStart + boundSize)) {
       return {
-        [name]: (boundStart + boundSize) - size,
-        className: `${className} end`
+        [name]: (boundStart + boundSize) - size - TOOLTIP_MARGIN,
+        className: `${className} tour-end`
       };
     } else {
       return {
@@ -110,7 +128,7 @@ export default withClickOutside(class Beacon extends React.Component {
     }
   }
 
-  calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position, ) {
+  calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position) {
     const vertical = position === 'top' || position === 'bottom';
     const reverse = position === 'bottom' || position === 'right';
     const primaryCoordinate = vertical ? 'top' : 'left';
@@ -136,7 +154,7 @@ export default withClickOutside(class Beacon extends React.Component {
         tooltipSize[secondaryDimension],
         scrollOffset[secondaryDimension],
         screenSize[secondaryDimension],
-        reverse ? primaryCoordinate : primaryComplement
+        `tour-${reverse ? primaryCoordinate : primaryComplement} tour-${this.state.tooltipActive ? 'in' : 'out'}`
       )
     };
   }
@@ -166,18 +184,27 @@ export default withClickOutside(class Beacon extends React.Component {
     const tooltipTarget = this.state.parentEl;
     const clone = tooltipTarget.cloneNode(true);
     clone.removeAttribute('id');
-    clone.setAttribute('style', getComputedStyle(tooltipTarget).cssText);
+    // Remove `-webkit-background-composite` style since browser complains about it being deprecated
+    const computedStyle = getComputedStyle(tooltipTarget).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
+    clone.setAttribute('style', computedStyle);
     clone.style.position = 'fixed';
     clone.style.left = `${tooltipTarget.getBoundingClientRect().left}px`;
     clone.style.top = `${tooltipTarget.getBoundingClientRect().top}px`;
     clone.style.margin = '0px';
     clone.style.zIndex = tooltipTarget.zIndex + 1;
-    clone.className = 'highlighted';
+    clone.style.transition = 'transform 300ms ease-in';
+    setTimeout(() => clone.className = 'tour-highlighted', 0);
     clone.id = TARGET_CLONE_ID;
     return clone;
   }
 
-  renderBeacon(position) {
+  renderBeacon(position, persistent) {
+    if (persistent && !this.state.hash) {
+      // We need to wait until the hash is set before we render.
+      // If it is never set, that means that the user has already
+      // clicked on this beacon so we don't display it again.
+      return false;
+    }
     const { left, top } = this.getBeaconCoordinates(position);
     const style = {
       position: 'absolute',
@@ -191,34 +218,38 @@ export default withClickOutside(class Beacon extends React.Component {
     );
   }
 
-  renderTooltip(appRoot, position, children) {
-    const oldClone = document.getElementById('tour-target-clone');
+  renderTooltip(position, children) {
+    const oldClone = document.getElementById(TARGET_CLONE_ID);
     if (oldClone) {
-      oldClone.parentNode.removeChild(oldClone);
-    }
-    const appRootElement = document.getElementById(appRoot);
-    const beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
-    if (this.state.tooltipActive) {
-      appRootElement.className = [TOOLTIP_OVERLAY_CLASS, 'faded'].concat(this.state.appRootClasses).join(' ');
-      const targetClone = this.getTargetClone();
-      document.body.appendChild(targetClone);
-      // Hide beacons while tooltip is visible
-      beacons.forEach(beacon => beacon.style.display = 'none');
-    } else {
-      appRootElement.className = [TOOLTIP_OVERLAY_CLASS].concat(this.state.appRootClasses).join(' ');
-      // Show beacons again
-      beacons.forEach(beacon => beacon.style.display = 'block');
+      oldClone.className = '';
+      oldClone.addEventListener('transitionend', () => oldClone.parentNode.removeChild(oldClone), false);
     }
     const { left, top, className } = this.getTooltipCoordinates(position);
+    if (className && this.state.appRoot) {
+      // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
+      // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
+      // then we fade out the background and highlight the target element of the tooltip.
+      const beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
+      if (this.state.tooltipActive) {
+        this.state.appRoot.className = `${TOOLTIP_FADED_CLASS} ${this.state.appRootClassName}`;
+        const targetClone = this.getTargetClone();
+        document.body.appendChild(targetClone);
+        // Hide beacons while tooltip is visible
+        beacons.forEach(beacon => beacon.style.display = 'none');
+      } else {
+        this.state.appRoot.className = this.state.appRootClassName;
+        // Show beacons again
+        beacons.forEach(beacon => beacon.style.display = 'block');
+      }
+    }
     const style = {
       position: 'absolute',
       left: `${left}px`,
-      top: `${top}px`,
-      visibility: this.state.tooltipActive ? 'visible' : 'hidden'
+      top: `${top}px`
     };
     return (
       <div>
-        <Portal isOpened onOpen={::this.updateState(this.props, this.state)}>
+        <Portal isOpened onOpen={this.updateState.bind(this, this.props, this.state)}>
           <tour-tooltip ref="tooltip" class={className} style={style}>
             {children}
           </tour-tooltip>
@@ -232,11 +263,11 @@ export default withClickOutside(class Beacon extends React.Component {
       return (<noscript ref="root"></noscript>);
     }
 
-    const { appRoot, position, children } = this.props;
+    const { position, persistent, children } = this.props;
     if (!this.state.tooltip) {
-      return this.renderBeacon(position);
+      return this.renderBeacon(position, persistent);
     } else {
-      return this.renderTooltip(appRoot, position, children);
+      return this.renderTooltip(position, children);
     }
   }
 
@@ -248,6 +279,11 @@ export default withClickOutside(class Beacon extends React.Component {
 
   showTooltip() {
     this.setState({ tooltip: true });
+    if (this.state.hash) {
+      // Store the hash so we know this beacon has been clicked
+      const transaction = this.state.database.transaction(['beacons'], 'readwrite');
+      transaction.objectStore('beacons').add(true, this.state.hash);
+    }
   }
 
   updateState(prevProps, prevState) {

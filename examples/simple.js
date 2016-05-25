@@ -19,22 +19,22 @@ class Test extends React.Component {
     return (<div>
       <h1>Beacon Example</h1>
       {this.renderBlock('heading_left', (
-        <Beacon position="left" appRoot="__react-content">
-          This is a tooltip
+        <Beacon position="left" persistent>
+          This is a left tooltip
         </Beacon>
       ))}
       {this.renderBlock('heading_right', (
-        <Beacon position="right" appRoot="__react-content">
-          This is a tooltip
+        <Beacon position="right" persistent>
+          This is a right tooltip
         </Beacon>
       ))}
       {this.renderBlock('heading_top', (
-        <Beacon position="top" appRoot="__react-content">
+        <Beacon position="top">
           This is a tooltip
         </Beacon>
       ))}
       {this.renderBlock('heading_bottom', (
-        <Beacon position="bottom" appRoot="__react-content">
+        <Beacon position="bottom">
           This is a tooltip
         </Beacon>
       ))}
@@ -42,4 +42,6 @@ class Test extends React.Component {
   }
 }
 
-ReactDOM.render(<Test/>, document.getElementById('__react-content'));
+const reactRoot = document.getElementById('__react-content');
+reactRoot.className = 'tour-overlay';
+ReactDOM.render(<Test/>, reactRoot);
