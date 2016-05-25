@@ -19990,13 +19990,7 @@
 	  };
 	
 	  Beacon.prototype.renderTooltip = function renderTooltip(position, children) {
-	    var oldClone = document.getElementById(TARGET_CLONE_ID);
-	    if (oldClone) {
-	      oldClone.className = '';
-	      oldClone.addEventListener('transitionend', function () {
-	        return oldClone.parentNode.removeChild(oldClone);
-	      }, false);
-	    }
+	    var _this3 = this;
 	
 	    var _getTooltipCoordinate = this.getTooltipCoordinates(position);
 	
@@ -20005,25 +19999,36 @@
 	    var className = _getTooltipCoordinate.className;
 	
 	    if (className && this.state.appRoot) {
-	      // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
-	      // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
-	      // then we fade out the background and highlight the target element of the tooltip.
-	      var beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
-	      if (this.state.tooltipActive) {
-	        this.state.appRoot.className = TOOLTIP_FADED_CLASS + ' ' + this.state.appRootClassName;
-	        var targetClone = this.getTargetClone();
-	        document.body.appendChild(targetClone);
-	        // Hide beacons while tooltip is visible
-	        beacons.forEach(function (beacon) {
-	          return beacon.style.display = 'none';
-	        });
-	      } else {
-	        this.state.appRoot.className = this.state.appRootClassName;
-	        // Show beacons again
-	        beacons.forEach(function (beacon) {
-	          return beacon.style.display = 'block';
-	        });
-	      }
+	      (function () {
+	        var oldClone = document.getElementById(TARGET_CLONE_ID);
+	        if (!_this3.state.tooltipActive && oldClone) {
+	          oldClone.className = '';
+	          oldClone.addEventListener('transitionend', function () {
+	            return oldClone.parentNode.removeChild(oldClone);
+	          }, false);
+	        }
+	        // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
+	        // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
+	        // then we fade out the background and highlight the target element of the tooltip.
+	        var beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
+	        if (_this3.state.tooltipActive) {
+	          if (!oldClone) {
+	            _this3.state.appRoot.className = TOOLTIP_FADED_CLASS + ' ' + _this3.state.appRootClassName;
+	            var targetClone = _this3.getTargetClone();
+	            document.body.appendChild(targetClone);
+	            // Hide beacons while tooltip is visible
+	            beacons.forEach(function (beacon) {
+	              return beacon.style.display = 'none';
+	            });
+	          }
+	        } else {
+	          _this3.state.appRoot.className = _this3.state.appRootClassName;
+	          // Show beacons again
+	          beacons.forEach(function (beacon) {
+	            return beacon.style.display = 'block';
+	          });
+	        }
+	      })();
 	    }
 	    var style = {
 	      position: 'absolute',
@@ -20062,8 +20067,9 @@
 	    }
 	  };
 	
-	  Beacon.prototype.handleClickOutside = function handleClickOutside() {
-	    if (this.state.tooltip) {
+	  Beacon.prototype.handleClickOutside = function handleClickOutside(event) {
+	    event.stopPropagation();
+	    if (this.state.tooltip && this.state.tooltipActive) {
 	      this.setState({ tooltipActive: false });
 	    }
 	  };
