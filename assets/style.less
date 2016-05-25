@@ -33,6 +33,7 @@ tour-tooltip {
   padding: 15px;
   box-shadow: 0 8px 6px -6px rgba(0,0,0,0.4);
   text-align: center;
+  cursor: default;
 
   &:before,
   &:after {
@@ -172,12 +173,13 @@ tour-tooltip {
 
 .tour-highlighted {
   transform-origin: 50% !important;
-  transform: scale(1.05) !important;
+  transform: scale(1.25) !important;
 }
 
 .tour-overlay {
   position: relative;
   display: block;
+  height: 100%;
   will-change: transform, -webkit-filter;
   transition: -webkit-filter 500ms ease-in;
 

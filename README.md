@@ -30,6 +30,12 @@ the `persistent` attribute.
 IndexedDB is used for storing the beacon state, so if some of your target browsers don't support IndexedDB,
 you should use a [shim](https://github.com/axemclion/IndexedDBShim).
 
+## Tooltip Overlay
+
+If desired, the tooltip target can be highlighted by fading the background and enlarging the target when
+the beacon is clicked (see screenshot). To activate this functionality, add the class `tour-overlay` to
+your application root element (i.e. the element that should be faded).
+
 ## Development
 
 ```

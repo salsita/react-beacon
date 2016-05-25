@@ -219,23 +219,25 @@ export default withClickOutside(class Beacon extends React.Component {
   }
 
   renderTooltip(position, children) {
-    const oldClone = document.getElementById(TARGET_CLONE_ID);
-    if (oldClone) {
-      oldClone.className = '';
-      oldClone.addEventListener('transitionend', () => oldClone.parentNode.removeChild(oldClone), false);
-    }
     const { left, top, className } = this.getTooltipCoordinates(position);
     if (className && this.state.appRoot) {
+      const oldClone = document.getElementById(TARGET_CLONE_ID);
+      if (!this.state.tooltipActive && oldClone) {
+        oldClone.className = '';
+        oldClone.addEventListener('transitionend', () => oldClone.parentNode.removeChild(oldClone), false);
+      }
       // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
       // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
       // then we fade out the background and highlight the target element of the tooltip.
       const beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
       if (this.state.tooltipActive) {
-        this.state.appRoot.className = `${TOOLTIP_FADED_CLASS} ${this.state.appRootClassName}`;
-        const targetClone = this.getTargetClone();
-        document.body.appendChild(targetClone);
-        // Hide beacons while tooltip is visible
-        beacons.forEach(beacon => beacon.style.display = 'none');
+        if (!oldClone) {
+          this.state.appRoot.className = `${TOOLTIP_FADED_CLASS} ${this.state.appRootClassName}`;
+          const targetClone = this.getTargetClone();
+          document.body.appendChild(targetClone);
+          // Hide beacons while tooltip is visible
+          beacons.forEach(beacon => beacon.style.display = 'none');
+        }
       } else {
         this.state.appRoot.className = this.state.appRootClassName;
         // Show beacons again
@@ -271,8 +273,9 @@ export default withClickOutside(class Beacon extends React.Component {
     }
   }
 
-  handleClickOutside() {
-    if (this.state.tooltip) {
+  handleClickOutside(event) {
+    event.stopPropagation();
+    if (this.state.tooltip && this.state.tooltipActive) {
       this.setState({ tooltipActive: false });
     }
   }
