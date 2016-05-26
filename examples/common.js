@@ -20068,13 +20068,14 @@
 	  };
 	
 	  Beacon.prototype.handleClickOutside = function handleClickOutside(event) {
-	    event.stopPropagation();
 	    if (this.state.tooltip && this.state.tooltipActive) {
+	      event.preventDefault();
 	      this.setState({ tooltipActive: false });
 	    }
 	  };
 	
-	  Beacon.prototype.showTooltip = function showTooltip() {
+	  Beacon.prototype.showTooltip = function showTooltip(event) {
+	    event.preventDefault();
 	    this.setState({ tooltip: true });
 	    if (this.state.hash) {
 	      // Store the hash so we know this beacon has been clicked
