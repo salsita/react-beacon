@@ -1,14 +1,25 @@
 tour-beacon {
-  height: 30px;
-  width: 30px;
+  height: 40px;
+  width: 40px;
   z-index: 1000;
-  border-radius: 100%;
-  background-color: #3f94d0;
-  cursor: pointer;
-  animation-name: pulse;
-  animation-duration: 1.5s;
-  animation-iteration-count: infinite;
-  animation-timing-function: ease-out;
+
+  &:after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -15px 0 0 -15px;
+    display: block;
+    height: 30px;
+    width: 30px;
+    border-radius: 100%;
+    background-color: #3f94d0;
+    cursor: pointer;
+    animation-name: pulse;
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-out;
+  }
 }
 
 tour-backdrop {
