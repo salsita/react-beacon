@@ -1,7 +1,17 @@
 tour-beacon {
+  height: 40px;
+  width: 40px;
+  z-index: 1000;
+}
+tour-beacon:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -15px 0 0 -15px;
+  display: block;
   height: 30px;
   width: 30px;
-  z-index: 1000;
   border-radius: 100%;
   background-color: #3f94d0;
   cursor: pointer;
