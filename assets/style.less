@@ -281,7 +281,12 @@ tour-tooltip {
   }
   80% {
     transform: scale(1.5);
-    opacity: 0;
+     // Use a non-zero value here to avoid iOS bug
+     // If opacity is 0, the rule is combined when
+     // uglified with the 100% rule, and apparently
+     // iOS doesn't like this and the rule is not
+     // applied properly.
+    opacity: 0.01;
   }
   100% {
     transform: scale(2.5);
