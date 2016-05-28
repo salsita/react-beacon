@@ -759,7 +759,7 @@ tour-tooltip p {
   80% {
     -webkit-transform: scale(1.5);
             transform: scale(1.5);
-    opacity: 0;
+    opacity: 0.01;
   }
   100% {
     -webkit-transform: scale(2.5);
@@ -776,7 +776,7 @@ tour-tooltip p {
   80% {
     -webkit-transform: scale(1.5);
             transform: scale(1.5);
-    opacity: 0;
+    opacity: 0.01;
   }
   100% {
     -webkit-transform: scale(2.5);
