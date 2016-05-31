@@ -6,7 +6,12 @@ const TARGET = process.env.npm_lifecycle_event;
 function getWebpackConfig() {
   if (TARGET === 'start') {
     return {
-      entry: './examples/simple.jsx',
+      entry: [
+        'webpack-dev-server/client?http://localhost:3000',
+        'webpack/hot/only-dev-server',
+        './examples/simple.jsx'
+      ],
+      inline: true,
       output: {
         path: path.join(__dirname, 'examples'),
         filename: 'simple.js'

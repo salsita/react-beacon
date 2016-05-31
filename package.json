@@ -21,7 +21,7 @@
   "scripts": {
     "build": "rc-tools run build",
     "compile": "rc-tools run compile",
-    "start": "webpack-dev-server",
+    "start": "./node_modules/.bin/webpack-dev-server --config webpack.config.babel.js --port 3000 --hot --content-base ./",
     "pub": "rc-tools run pub",
     "karma": "rc-tools run karma",
     "test": "rc-tools run test"
