@@ -1,5 +1,5 @@
 import path from 'path';
-// import webpack from 'webpack';
+import webpack from 'webpack';
 
 const TARGET = process.env.npm_lifecycle_event;
 
@@ -7,13 +7,11 @@ function getWebpackConfig() {
   if (TARGET === 'start') {
     return {
       entry: [
-        'webpack-dev-server/client?http://localhost:3000',
-        'webpack/hot/only-dev-server',
+        'webpack-dev-server/client?http://localhost:8080',
         './examples/simple.jsx'
       ],
       inline: true,
       output: {
-        path: path.join(__dirname, 'examples'),
         filename: 'simple.js'
       },
       module: {
@@ -30,7 +28,12 @@ function getWebpackConfig() {
         extensions: ['', '.js', '.jsx']
       },
       plugins: [
-      ]
+        new webpack.HotModuleReplacementPlugin()
+      ],
+      devServer: {
+        contentBase: 'examples/',
+        hot: true
+      }
     };
   }
 }

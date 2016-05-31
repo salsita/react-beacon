@@ -29,7 +29,7 @@ class Test extends React.Component {
         </Beacon>
       ))}
       {this.renderBlock('heading_top', (
-        <Beacon position="top">
+        <Beacon position="bottom">
           This is a tooltip
         </Beacon>
       ))}
