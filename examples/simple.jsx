@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Beacon from 'react-beacon';
+import Beacon from '../src/Beacon';
 
 class Test extends React.Component {
   renderBlock(id, child) {
@@ -42,6 +42,5 @@ class Test extends React.Component {
   }
 }
 
-const reactRoot = document.getElementById('__react-content');
-reactRoot.className = 'tour-overlay';
+const reactRoot = document.getElementById('app-root');
 ReactDOM.render(<Test/>, reactRoot);
