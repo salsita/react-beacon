@@ -12,7 +12,7 @@ const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
 const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
 
-export default withClickOutside(class Beacon extends React.Component {
+export class Beacon extends React.Component {
 
   static propTypes = {
     position: PropTypes.string,
@@ -300,4 +300,6 @@ export default withClickOutside(class Beacon extends React.Component {
       }
     }
   }
-});
+};
+
+export default withClickOutside(Beacon);
