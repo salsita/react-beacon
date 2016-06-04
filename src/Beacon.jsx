@@ -3,7 +3,7 @@ import Portal from 'react-portal';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 
-import '../assets/style.less';
+import '../assets/style.styl';
 
 const BEACON_HEIGHT = 30;
 const BEACON_WIDTH = 30;
@@ -162,7 +162,8 @@ export class Beacon extends React.Component {
   getTooltipCoordinates(position) {
     if (!this.state.tooltipHeight && !this.state.tooltipWidth) {
       // We need to draw the tooltip offscreen first to get the dimensions
-      return { left: -1000, top: -1000 };
+      // return { left: -1000, top: -1000 };
+      return { left: 0, top: 0 };
     }
     const bounds = this.getParentBounds();
     const screenSize = {
@@ -224,7 +225,9 @@ export class Beacon extends React.Component {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
       if (!this.state.tooltipActive && oldClone) {
         oldClone.className = '';
-        oldClone.addEventListener('transitionend', () => oldClone.parentNode.removeChild(oldClone), false);
+        oldClone.addEventListener('transitionend', () => {
+          oldClone.parentNode.removeChild(oldClone); }
+        , false);
       }
       // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
       // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`

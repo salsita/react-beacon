@@ -9,12 +9,24 @@ React Beacon - Onboarding Tooltips using Slack-like Beacons
 
 ## Example
 
-http://localhost:8017/examples
+http://localhost:8080/
 
 ### Props
 
 * `position`: top, right, bottom or left for tooltip to appear. Default to right
 * `persistent`: see below
+
+## Usage
+
+Just place the `Beacon` tag inside the target element with the tooltip text as its content:
+
+```
+<div id="some-element-that-I-want-to-explain-to-the-user">
+  <Beacon>
+    This is the tooltip text
+  </Beacon>
+</div>
+```
 
 ## Persistence
 

@@ -5,7 +5,7 @@ import merge from 'webpack-merge';
 const TARGET = process.env.npm_lifecycle_event;
 process.env.BABEL_ENV = TARGET;
 
-const sharedConfig = {
+export const sharedConfig = {
   module: {
     loaders: [
       {
@@ -17,7 +17,7 @@ const sharedConfig = {
           path.resolve(__dirname, 'test')
         ]
       },
-      { test: /\.less$/, loader: 'style!css!less' }
+      { test: /\.styl$/, loader: 'style!css!stylus' }
     ]
   },
   resolve: {
