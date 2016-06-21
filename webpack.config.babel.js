@@ -1,6 +1,7 @@
 import path from 'path';
 import webpack from 'webpack';
 import merge from 'webpack-merge';
+import webpackUMDExternal from 'webpack-umd-external';
 
 const TARGET = process.env.npm_lifecycle_event;
 process.env.BABEL_ENV = TARGET;
@@ -49,8 +50,15 @@ function getWebpackConfig() {
       entry: './src/Beacon.jsx',
       output: {
         path: path.resolve(__dirname, 'lib'),
-        filename: 'Beacon.js'
-      }
+        filename: 'Beacon.js',
+        library: 'Beacon',
+        libraryTarget: 'umd',
+        umdNamedDefine: true
+      },
+      externals: webpackUMDExternal({
+        react: 'React',
+        'react-dom': 'ReactDOM'
+      })
     };
   } else if (TARGET === 'test' || TARGET === 'test:watch') {
     return {

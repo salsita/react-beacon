@@ -1,0 +1,8 @@
+README.md
+assets
+examples
+karma*
+src
+test
+webpack.config.babel.js
+.eslintrc

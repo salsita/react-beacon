@@ -8,7 +8,7 @@ import Portal from 'react-portal';
 
 function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
   return new Promise((resolve, reject) => {
-    function waitForTimeout(timeout, currentTime, maxTime) {
+    function wait(timeout, currentTime, maxTime) {
       setTimeout(() => {
         if (conditionFunc()) {
           resolve();
@@ -16,11 +16,11 @@ function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
           // Took more than maximum time
           reject();
         } else {
-          waitForTimeout(timeout, currentTime + timeout, maxTime);
+          wait(timeout, currentTime + timeout, maxTime);
         }
       }, timeout);
     }
-    waitForTimeout(interval, 0, maxTime);
+    wait(interval, 0, maxTime);
   });
 }
 
