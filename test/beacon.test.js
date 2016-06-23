@@ -1,22 +1,22 @@
 import React from 'react';
 import expect from 'expect.js';
 import { mount } from 'enzyme';
-import { spy } from 'sinon';
+import { spy, stub } from 'sinon';
 import TestUtils from 'react-addons-test-utils';
-import { Beacon } from '../src/Beacon';
+import { Beacon, BeaconConfig } from '../src/Beacon';
 import Portal from 'react-portal';
 
 function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
   return new Promise((resolve, reject) => {
-    function wait(timeout, currentTime, maxTime) {
+    function wait(timeout, current, max) {
       setTimeout(() => {
         if (conditionFunc()) {
           resolve();
-        } else if (currentTime + timeout > maxTime) {
+        } else if (current + timeout > max) {
           // Took more than maximum time
           reject();
         } else {
-          wait(timeout, currentTime + timeout, maxTime);
+          wait(timeout, current + timeout, max);
         }
       }, timeout);
     }
@@ -36,7 +36,7 @@ after(() => {
   Beacon.prototype.componentDidMount.restore();
   Portal.prototype.componentDidMount.restore();
   portalSpy = null;
-})
+});
 
 describe('<Beacon />', () => {
   let wrapper;
@@ -57,6 +57,7 @@ describe('<Beacon />', () => {
     expect(Beacon.prototype.componentDidMount.calledOnce).to.equal(true);
     expect(wrapper.state('parentEl')).not.to.be.null;
     expect(wrapper.state('tooltip')).to.be(false);
+    expect(wrapper.state('persistent')).to.be(undefined);
     expect(portal().tagName).to.equal('TOUR-BEACON');
   });
 
@@ -94,5 +95,33 @@ describe('<Beacon />', () => {
     TestUtils.Simulate.click(portal());
     expect(document.getElementById('tour-target-clone')).not.to.be(null);
     wrapper2.detach();
+  });
+});
+
+describe('Context', () => {
+  let wrapper;
+  let parent;
+  const open = stub().returns({});
+  const mockIndexedDB = { open };
+  const config = mount(<BeaconConfig persistent position="bottom" indexedDB={mockIndexedDB} />);
+
+  beforeEach(() => {
+    parent = document.createElement('div');
+    document.body.appendChild(parent);
+    wrapper = mount(<Beacon>some text</Beacon>, {
+      attachTo: parent,
+      context: config.instance().getChildContext()
+    });
+  });
+
+  afterEach(() => {
+    wrapper.detach();
+    document.body.removeChild(document.body.firstChild);
+  });
+
+  it('overrides the default values with the context if any', () => {
+    expect(wrapper.state('persistent')).to.be(true);
+    expect(wrapper.state('position')).to.be('bottom');
+    expect(open.calledOnce).to.equal(true);
   });
 });

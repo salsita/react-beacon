@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import Portal from 'react-portal';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
+import Config from './BeaconConfig';
 
 import '../assets/style.styl';
 
@@ -20,8 +21,8 @@ export class Beacon extends React.Component {
     children: PropTypes.node
   }
 
-  static defaultProps = {
-    position: 'right'
+  static contextTypes = {
+    beacon: PropTypes.object
   }
 
   constructor(props) {
@@ -39,11 +40,16 @@ export class Beacon extends React.Component {
   }
 
   componentWillMount() {
-    if (this.props.persistent) {
+    const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
+    const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
+    const position = this.props.position || (this.context.beacon && this.context.beacon.position) || 'left';
+    this.setState({ position, persistent, indexedDB });
+
+    if (persistent) {
       // Retrieve the state of the badge from the database
-      // If `persistent` is `true` (the default value) then we use the hash of the component's children
+      // If `persistent` is `true` then we use the hash of the component's children
       // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
-      const hash = this.props.persistent === true ? sha1(JSON.stringify(this.props.children)) : this.props.persistent;
+      const hash = persistent === true ? sha1(JSON.stringify(this.props.children)) : persistent;
       const request = indexedDB.open('react-beacon');
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -65,7 +71,8 @@ export class Beacon extends React.Component {
   componentDidMount() {
     const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
     const appRootClassName = appRoot && appRoot.className;
-    this.setState({ parentEl: this.refs.root.parentNode, appRoot, appRootClassName });
+    // We disable the linter here since we actually want to force a rerender in this case
+    this.setState({ parentEl: this.refs.root.parentNode, appRoot, appRootClassName }); // eslint-disable-line react/no-did-mount-set-state
   }
 
   getParentBounds() {
@@ -103,60 +110,6 @@ export class Beacon extends React.Component {
         top: bounds.top + ((bounds.bottom - bounds.top - BEACON_HEIGHT) / 2)
       };
     }
-  }
-
-  // Adjust the secondary coordinate so it doesn't overflow the screen bounds
-  // Also return the (potentially adjusted) class name
-  calculateSecondaryCoordinateAndClassNames(name, start, size, boundStart, boundSize, className) {
-    // Adjust start upwards if it is too low
-    if (start < boundStart) {
-      return {
-        [name]: boundStart + TOOLTIP_MARGIN,
-        className: `${className} tour-start`
-      };
-    // Or adjust it downwards if it is too high
-    } else if ((start + size) > (boundStart + boundSize)) {
-      return {
-        [name]: (boundStart + boundSize) - size - TOOLTIP_MARGIN,
-        className: `${className} tour-end`
-      };
-    } else {
-      return {
-        [name]: start,
-        className: className
-      };
-    }
-  }
-
-  calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position) {
-    const vertical = position === 'top' || position === 'bottom';
-    const reverse = position === 'bottom' || position === 'right';
-    const primaryCoordinate = vertical ? 'top' : 'left';
-    const primaryComplement = vertical ? 'bottom' : 'right';
-    const secondaryCoordinate = vertical ? 'left' : 'top';
-    const secondaryComplement = vertical ? 'right' : 'bottom';
-    const dimension = vertical ? 'height' : 'width';
-    const secondaryDimension = vertical ? 'width' : 'height';
-    const primaryCoordinateValue = reverse ?
-      // For bottom or right we just take that bound and add the margin
-      bounds[position] + TOOLTIP_MARGIN :
-      // For top or left we shift over the extent of the tooltip in that dimension (plus margin)
-      bounds[position] - tooltipSize[dimension] - TOOLTIP_MARGIN;
-    const secondaryCoordinateValue =
-      // Secondary coordinate is centered on the extent of the tooltip in that dimension
-      bounds[secondaryCoordinate] +
-      ((bounds[secondaryComplement] - bounds[secondaryCoordinate] - tooltipSize[secondaryDimension]) / 2);
-    return {
-      [primaryCoordinate]: primaryCoordinateValue,
-      ...this.calculateSecondaryCoordinateAndClassNames(
-        secondaryCoordinate,
-        secondaryCoordinateValue,
-        tooltipSize[secondaryDimension],
-        scrollOffset[secondaryDimension],
-        screenSize[secondaryDimension],
-        `tour-${reverse ? primaryCoordinate : primaryComplement} tour-${this.state.tooltipActive ? 'in' : 'out'}`
-      )
-    };
   }
 
   getTooltipCoordinates(position) {
@@ -226,7 +179,8 @@ export class Beacon extends React.Component {
       if (!this.state.tooltipActive && oldClone) {
         oldClone.className = '';
         oldClone.addEventListener('transitionend', () => {
-          oldClone.parentNode.removeChild(oldClone); }
+          oldClone.parentNode.removeChild(oldClone);
+        }
         , false);
       }
       // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
@@ -268,12 +222,66 @@ export class Beacon extends React.Component {
       return (<noscript ref="root"></noscript>);
     }
 
-    const { position, persistent, children } = this.props;
+    const { position, persistent } = this.state;
     if (!this.state.tooltip) {
       return this.renderBeacon(position, persistent);
     } else {
-      return this.renderTooltip(position, children);
+      return this.renderTooltip(position, this.props.children);
     }
+  }
+
+  // Adjust the secondary coordinate so it doesn't overflow the screen bounds
+  // Also return the (potentially adjusted) class name
+  calculateSecondaryCoordinateAndClassNames(name, start, size, boundStart, boundSize, className) {
+    // Adjust start upwards if it is too low
+    if (start < boundStart) {
+      return {
+        [name]: boundStart + TOOLTIP_MARGIN,
+        className: `${className} tour-start`
+      };
+    // Or adjust it downwards if it is too high
+    } else if ((start + size) > (boundStart + boundSize)) {
+      return {
+        [name]: (boundStart + boundSize) - size - TOOLTIP_MARGIN,
+        className: `${className} tour-end`
+      };
+    } else {
+      return {
+        [name]: start,
+        className: className
+      };
+    }
+  }
+
+  calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position) {
+    const vertical = position === 'top' || position === 'bottom';
+    const reverse = position === 'bottom' || position === 'right';
+    const primaryCoordinate = vertical ? 'top' : 'left';
+    const primaryComplement = vertical ? 'bottom' : 'right';
+    const secondaryCoordinate = vertical ? 'left' : 'top';
+    const secondaryComplement = vertical ? 'right' : 'bottom';
+    const dimension = vertical ? 'height' : 'width';
+    const secondaryDimension = vertical ? 'width' : 'height';
+    const primaryCoordinateValue = reverse ?
+      // For bottom or right we just take that bound and add the margin
+      bounds[position] + TOOLTIP_MARGIN :
+      // For top or left we shift over the extent of the tooltip in that dimension (plus margin)
+      bounds[position] - tooltipSize[dimension] - TOOLTIP_MARGIN;
+    const secondaryCoordinateValue =
+      // Secondary coordinate is centered on the extent of the tooltip in that dimension
+      bounds[secondaryCoordinate] +
+      ((bounds[secondaryComplement] - bounds[secondaryCoordinate] - tooltipSize[secondaryDimension]) / 2);
+    return {
+      [primaryCoordinate]: primaryCoordinateValue,
+      ...this.calculateSecondaryCoordinateAndClassNames(
+        secondaryCoordinate,
+        secondaryCoordinateValue,
+        tooltipSize[secondaryDimension],
+        scrollOffset[secondaryDimension],
+        screenSize[secondaryDimension],
+        `tour-${reverse ? primaryCoordinate : primaryComplement} tour-${this.state.tooltipActive ? 'in' : 'out'}`
+      )
+    };
   }
 
   handleClickOutside(event) {
@@ -303,6 +311,7 @@ export class Beacon extends React.Component {
       }
     }
   }
-};
+}
 
 export default withClickOutside(Beacon);
+export const BeaconConfig = Config;
