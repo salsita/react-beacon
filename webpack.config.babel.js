@@ -18,7 +18,7 @@ export const sharedConfig = {
           path.resolve(__dirname, 'test')
         ]
       },
-      { test: /\.styl$/, loader: 'style!css!stylus' }
+      { test: /\.styl$/, loader: 'style!css!autoprefixer!stylus' }
     ]
   },
   resolve: {

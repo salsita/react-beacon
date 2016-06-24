@@ -141,13 +141,13 @@ export class Beacon extends React.Component {
     // Remove `-webkit-background-composite` style since browser complains about it being deprecated
     const computedStyle = getComputedStyle(tooltipTarget).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
     clone.setAttribute('style', computedStyle);
-    clone.style.position = 'fixed';
-    clone.style.left = `${tooltipTarget.getBoundingClientRect().left}px`;
-    clone.style.top = `${tooltipTarget.getBoundingClientRect().top}px`;
+    clone.style.position = 'absolute';
+    clone.style.left = `${tooltipTarget.getBoundingClientRect().left + window.pageXOffset}px`;
+    clone.style.top = `${tooltipTarget.getBoundingClientRect().top + window.pageYOffset}px`;
     clone.style.margin = '0px';
     clone.style.zIndex = tooltipTarget.zIndex + 1;
-    clone.style.transition = 'transform 300ms ease-in';
-    setTimeout(() => clone.className = 'tour-highlighted', 0);
+    clone.className = 'tour-clone';
+    setTimeout(() => clone.className = 'tour-clone tour-highlighted', 0);
     clone.id = TARGET_CLONE_ID;
     return clone;
   }
@@ -167,7 +167,9 @@ export class Beacon extends React.Component {
     };
     return (
       <Portal isOpened>
-        <tour-beacon style={style} onClick={::this.showTooltip} />
+        <tour-beacon style={style} onClick={::this.showTooltip}>
+          <span />
+        </tour-beacon>
       </Portal>
     );
   }
@@ -177,7 +179,7 @@ export class Beacon extends React.Component {
     if (className && this.state.appRoot) {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
       if (!this.state.tooltipActive && oldClone) {
-        oldClone.className = '';
+        oldClone.className = 'tour-clone';
         oldClone.addEventListener('transitionend', () => {
           oldClone.parentNode.removeChild(oldClone);
         }
