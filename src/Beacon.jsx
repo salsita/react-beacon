@@ -3,6 +3,7 @@ import Portal from 'react-portal';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
+import TetherComponent from 'react-tether';
 
 import '../assets/style.styl';
 
@@ -18,6 +19,7 @@ export class Beacon extends React.Component {
   static propTypes = {
     position: PropTypes.string,
     persistent: PropTypes.bool,
+    tooltipText: PropTypes.string,
     children: PropTypes.node
   }
 
@@ -49,7 +51,7 @@ export class Beacon extends React.Component {
       // Retrieve the state of the badge from the database
       // If `persistent` is `true` then we use the hash of the component's children
       // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
-      const hash = persistent === true ? sha1(JSON.stringify(this.props.children)) : persistent;
+      const hash = persistent === true ? sha1(JSON.stringify(this.props.tooltipText)) : persistent;
       const request = indexedDB.open('react-beacon');
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -159,18 +161,21 @@ export class Beacon extends React.Component {
       // clicked on this beacon so we don't display it again.
       return false;
     }
+/*
     const { left, top } = this.getBeaconCoordinates(position);
     const style = {
       position: 'absolute',
       left: `${left}px`,
       top: `${top}px`
     };
+*/
     return (
-      <Portal isOpened>
-        <tour-beacon style={style} onClick={::this.showTooltip}>
-          <span />
-        </tour-beacon>
-      </Portal>
+      <TetherComponent
+        attachment="middle center"
+      >
+        {this.props.children}
+        <tour-beacon><span /></tour-beacon>
+      </TetherComponent>
     );
   }
 
