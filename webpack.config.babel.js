@@ -29,6 +29,8 @@ export const sharedConfig = {
 function getWebpackConfig() {
   if (TARGET === 'start') {
     return {
+      debug: true,
+      devtool: 'inline-source-map',
       entry: [
         'webpack-dev-server/client?http://localhost:8080',
         'webpack/hot/only-dev-server',

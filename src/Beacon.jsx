@@ -1,5 +1,4 @@
 import React, { PropTypes } from 'react';
-import Portal from 'react-portal';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
@@ -7,20 +6,18 @@ import TetherComponent from 'react-tether';
 
 import '../assets/style.styl';
 
-const BEACON_HEIGHT = 30;
-const BEACON_WIDTH = 30;
-const TOOLTIP_MARGIN = 10;
 const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
 const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
+const DEFAULT_POSITION = 'middle right';
 
 export class Beacon extends React.Component {
 
   static propTypes = {
     position: PropTypes.string,
     persistent: PropTypes.bool,
-    tooltipText: PropTypes.string,
-    children: PropTypes.node
+    tooltipText: PropTypes.string.isRequired,
+    children: React.PropTypes.element.isRequired
   }
 
   static contextTypes = {
@@ -33,7 +30,6 @@ export class Beacon extends React.Component {
     this.state = {
       tooltip: false,
       tooltipActive: true,
-      parentEl: null,
       tooltipHeight: 0,
       tooltipWidth: 0,
       appRoot: null,
@@ -44,8 +40,10 @@ export class Beacon extends React.Component {
   componentWillMount() {
     const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
     const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
-    const position = this.props.position || (this.context.beacon && this.context.beacon.position) || 'left';
-    this.setState({ position, persistent, indexedDB });
+    const position = this.props.position || (this.context.beacon && this.context.beacon.position) || DEFAULT_POSITION;
+    const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
+    const appRootClassName = appRoot && appRoot.className;
+    this.setState({ position, persistent, indexedDB, appRoot, appRootClassName });
 
     if (persistent) {
       // Retrieve the state of the badge from the database
@@ -70,74 +68,8 @@ export class Beacon extends React.Component {
     }
   }
 
-  componentDidMount() {
-    const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
-    const appRootClassName = appRoot && appRoot.className;
-    // We disable the linter here since we actually want to force a rerender in this case
-    this.setState({ parentEl: this.refs.root.parentNode, appRoot, appRootClassName }); // eslint-disable-line react/no-did-mount-set-state
-  }
-
-  getParentBounds() {
-    const bounds = this.state.parentEl.getBoundingClientRect();
-    return {
-      left: bounds.left + window.scrollX,
-      right: bounds.right + window.scrollX,
-      top: bounds.top + window.scrollY,
-      bottom: bounds.bottom + window.scrollY
-    };
-  }
-
-  getBeaconCoordinates(position) {
-    const bounds = this.getParentBounds();
-    switch (position) {
-    case 'top':
-      return {
-        left: bounds.left + ((bounds.right - bounds.left - BEACON_WIDTH) / 2),
-        top: bounds.top
-      };
-    case 'bottom':
-      return {
-        left: bounds.left + ((bounds.right - bounds.left - BEACON_WIDTH) / 2),
-        top: bounds.bottom - BEACON_HEIGHT
-      };
-    case 'right':
-      return {
-        left: bounds.right - BEACON_WIDTH,
-        top: bounds.top + ((bounds.bottom - bounds.top - BEACON_HEIGHT) / 2)
-      };
-    default:
-    case 'left':
-      return {
-        left: bounds.left,
-        top: bounds.top + ((bounds.bottom - bounds.top - BEACON_HEIGHT) / 2)
-      };
-    }
-  }
-
-  getTooltipCoordinates(position) {
-    if (!this.state.tooltipHeight && !this.state.tooltipWidth) {
-      // We need to draw the tooltip offscreen first to get the dimensions
-      // return { left: -1000, top: -1000 };
-      return { left: 0, top: 0 };
-    }
-    const bounds = this.getParentBounds();
-    const screenSize = {
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight
-    };
-    const tooltipSize = {
-      width: this.state.tooltipWidth,
-      height: this.state.tooltipHeight
-    };
-    const scrollOffset = {
-      width: window.scrollX,
-      height: window.scrollY
-    };
-    return this.calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position);
-  }
-
   getTargetClone() {
-    const tooltipTarget = this.state.parentEl;
+    const tooltipTarget = this.refs.tooltipTarget;
     const clone = tooltipTarget.cloneNode(true);
     clone.removeAttribute('id');
     // Remove `-webkit-background-composite` style since browser complains about it being deprecated
@@ -161,27 +93,16 @@ export class Beacon extends React.Component {
       // clicked on this beacon so we don't display it again.
       return false;
     }
-/*
-    const { left, top } = this.getBeaconCoordinates(position);
-    const style = {
-      position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`
-    };
-*/
     return (
-      <TetherComponent
-        attachment="middle center"
-      >
-        {this.props.children}
-        <tour-beacon><span /></tour-beacon>
+      <TetherComponent attachment="middle center">
+        {React.cloneElement(this.props.children, { ref: 'tooltipTarget' })}
+        <tour-beacon onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
   }
 
   renderTooltip(position, children) {
-    const { left, top, className } = this.getTooltipCoordinates(position);
-    if (className && this.state.appRoot) {
+    if (this.state.appRoot) {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
       if (!this.state.tooltipActive && oldClone) {
         oldClone.className = 'tour-clone';
@@ -208,87 +129,22 @@ export class Beacon extends React.Component {
         beacons.forEach(beacon => beacon.style.display = 'block');
       }
     }
-    const style = {
-      position: 'absolute',
-      left: `${left}px`,
-      top: `${top}px`
-    };
-    return (
-      <div>
-        <Portal isOpened onOpen={this.updateState.bind(this, this.props, this.state)}>
-          <tour-tooltip ref="tooltip" class={className} style={style}>
-            {children}
-          </tour-tooltip>
-        </Portal>
-      </div>
-    );
+
+    return this.state.tooltipActive ?
+      (<TetherComponent attachment={position}>
+          {this.props.children}
+          <tour-tooltip ref="tooltip">{this.props.tooltipText}</tour-tooltip>
+        </TetherComponent>) :
+      (<div>{children}</div>);
   }
 
   render() {
-    if (!this.state.parentEl) {
-      return (<noscript ref="root"></noscript>);
-    }
-
     const { position, persistent } = this.state;
     if (!this.state.tooltip) {
       return this.renderBeacon(position, persistent);
     } else {
       return this.renderTooltip(position, this.props.children);
     }
-  }
-
-  // Adjust the secondary coordinate so it doesn't overflow the screen bounds
-  // Also return the (potentially adjusted) class name
-  calculateSecondaryCoordinateAndClassNames(name, start, size, boundStart, boundSize, className) {
-    // Adjust start upwards if it is too low
-    if (start < boundStart) {
-      return {
-        [name]: boundStart + TOOLTIP_MARGIN,
-        className: `${className} tour-start`
-      };
-    // Or adjust it downwards if it is too high
-    } else if ((start + size) > (boundStart + boundSize)) {
-      return {
-        [name]: (boundStart + boundSize) - size - TOOLTIP_MARGIN,
-        className: `${className} tour-end`
-      };
-    } else {
-      return {
-        [name]: start,
-        className: className
-      };
-    }
-  }
-
-  calculateTooltipCoordinates(bounds, tooltipSize, screenSize, scrollOffset, position) {
-    const vertical = position === 'top' || position === 'bottom';
-    const reverse = position === 'bottom' || position === 'right';
-    const primaryCoordinate = vertical ? 'top' : 'left';
-    const primaryComplement = vertical ? 'bottom' : 'right';
-    const secondaryCoordinate = vertical ? 'left' : 'top';
-    const secondaryComplement = vertical ? 'right' : 'bottom';
-    const dimension = vertical ? 'height' : 'width';
-    const secondaryDimension = vertical ? 'width' : 'height';
-    const primaryCoordinateValue = reverse ?
-      // For bottom or right we just take that bound and add the margin
-      bounds[position] + TOOLTIP_MARGIN :
-      // For top or left we shift over the extent of the tooltip in that dimension (plus margin)
-      bounds[position] - tooltipSize[dimension] - TOOLTIP_MARGIN;
-    const secondaryCoordinateValue =
-      // Secondary coordinate is centered on the extent of the tooltip in that dimension
-      bounds[secondaryCoordinate] +
-      ((bounds[secondaryComplement] - bounds[secondaryCoordinate] - tooltipSize[secondaryDimension]) / 2);
-    return {
-      [primaryCoordinate]: primaryCoordinateValue,
-      ...this.calculateSecondaryCoordinateAndClassNames(
-        secondaryCoordinate,
-        secondaryCoordinateValue,
-        tooltipSize[secondaryDimension],
-        scrollOffset[secondaryDimension],
-        screenSize[secondaryDimension],
-        `tour-${reverse ? primaryCoordinate : primaryComplement} tour-${this.state.tooltipActive ? 'in' : 'out'}`
-      )
-    };
   }
 
   handleClickOutside(event) {

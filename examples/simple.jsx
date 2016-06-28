@@ -18,16 +18,16 @@ class Test extends React.Component {
   render() {
     return (<div>
       <h1>Beacon Example</h1>
-      <Beacon tooltipText="This is a left tooltip" position="left">
+      <Beacon tooltipText="This is a left tooltip" position="middle left">
         {this.renderBlock('heading_left')}
       </Beacon>
-      <Beacon tooltipText="This is a right tooltip" position="right">
+      <Beacon tooltipText="This is a right tooltip" position="middle right">
         {this.renderBlock('heading_right')}
       </Beacon>
-      <Beacon tooltipText="This is a top tooltip" position="top">
+      <Beacon tooltipText="This is a top tooltip" position="top center">
         {this.renderBlock('heading_top')}
       </Beacon>
-      <Beacon tooltipText="This is a bottom tooltip" position="bottom">
+      <Beacon tooltipText="This is a bottom tooltip" position="bottom center">
         {this.renderBlock('heading_bottom')}
       </Beacon>
     </div>);
