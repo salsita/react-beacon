@@ -94,7 +94,7 @@ export class Beacon extends React.Component {
       return false;
     }
     return (
-      <TetherComponent attachment="middle center">
+      <TetherComponent attachment="middle center" constraints={[{ to: 'scrollParent' }]}>
         {React.cloneElement(this.props.children, { ref: 'tooltipTarget' })}
         <tour-beacon onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
@@ -133,7 +133,7 @@ export class Beacon extends React.Component {
     return this.state.tooltipActive ?
       (<TetherComponent attachment={position}>
           {this.props.children}
-          <tour-tooltip ref="tooltip">{this.props.tooltipText}</tour-tooltip>
+          <tour-tooltip className="tour-in" ref="tooltip">{this.props.tooltipText}</tour-tooltip>
         </TetherComponent>) :
       (<div>{children}</div>);
   }

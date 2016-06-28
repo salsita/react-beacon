@@ -31,14 +31,21 @@ function getWebpackConfig() {
     return {
       debug: true,
       devtool: 'inline-source-map',
-      entry: [
-        'webpack-dev-server/client?http://localhost:8080',
-        'webpack/hot/only-dev-server',
-        './examples/simple.jsx'
-      ],
+      entry: {
+        simple: [
+          'webpack-dev-server/client?http://localhost:8080',
+          'webpack/hot/only-dev-server',
+          './examples/simple.jsx'
+        ],
+        scroll: [
+          'webpack-dev-server/client?http://localhost:8080',
+          'webpack/hot/only-dev-server',
+          './examples/simple.jsx'
+        ]
+      },
       inline: true,
       output: {
-        filename: 'simple.js'
+        filename: '[name].js'
       },
       plugins: [
         new webpack.HotModuleReplacementPlugin()
