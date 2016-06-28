@@ -191,17 +191,6 @@ export class Beacon extends React.Component {
       transaction.objectStore('beacons').add(true, this.state.hash);
     }
   }
-
-  updateState(prevProps, prevState) {
-    if (this.refs.tooltip) {
-      const bounds = this.refs.tooltip.getBoundingClientRect();
-      const tooltipWidth = bounds.right - bounds.left;
-      const tooltipHeight = bounds.bottom - bounds.top;
-      if (tooltipWidth !== prevState.tooltipWidth || tooltipHeight !== prevState.tooltipHeight) {
-        this.setState({ tooltipWidth, tooltipHeight });
-      }
-    }
-  }
 }
 
 export default withClickOutside(Beacon);
