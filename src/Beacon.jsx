@@ -9,12 +9,13 @@ import '../assets/style.styl';
 const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
 const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
-const DEFAULT_POSITION = 'middle right';
+// How much difference we allow between tooltip target margins before we place
+// the tooltip to one side or the other
+const TOOLTIP_TOLERANCE = 50;
 
 export class Beacon extends React.Component {
 
   static propTypes = {
-    position: PropTypes.string,
     persistent: PropTypes.bool,
     tooltipText: PropTypes.string.isRequired,
     children: React.PropTypes.element.isRequired
@@ -40,10 +41,9 @@ export class Beacon extends React.Component {
   componentWillMount() {
     const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
     const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
-    const position = this.props.position || (this.context.beacon && this.context.beacon.position) || DEFAULT_POSITION;
     const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
     const appRootClassName = appRoot && appRoot.className;
-    this.setState({ position, persistent, indexedDB, appRoot, appRootClassName });
+    this.setState({ persistent, indexedDB, appRoot, appRootClassName });
 
     if (persistent) {
       // Retrieve the state of the badge from the database
@@ -86,7 +86,34 @@ export class Beacon extends React.Component {
     return clone;
   }
 
-  renderBeacon(position, persistent) {
+  // Helper function to return the right attachment (before the target, after the target
+  // or somewhere in-between) based on the margins around the target
+  getAttachmentForMargins(start, end, before, after, between) {
+    if (Math.abs(end - start) < TOOLTIP_TOLERANCE) {
+      // Both margins are similar to place it in-between
+      return between;
+    } else if (start > end) {
+      // More space on the first side
+      return before;
+    } else {
+      // More space on the second side
+      return after;
+    }
+  }
+
+  getTooltipAttachment() {
+    const rootElement = this.state.appRoot || document.body;
+    const bounds = this.refs.tooltipTarget.getBoundingClientRect();
+    const top = bounds.top;
+    const bottom = rootElement.clientHeight - bounds.bottom;
+    const left = bounds.left;
+    const right = rootElement.clientWidth - bounds.right;
+    const vertical = this.getAttachmentForMargins(top, bottom, 'bottom', 'top', 'middle');
+    const horizontal = this.getAttachmentForMargins(left, right, 'right', 'left', 'center');
+    return `${vertical} ${horizontal}`;
+  }
+
+  renderBeacon(persistent) {
     if (persistent && !this.state.hash) {
       // We need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
@@ -96,42 +123,43 @@ export class Beacon extends React.Component {
     return (
       <TetherComponent attachment="middle center" constraints={[{ to: 'scrollParent' }]}>
         {React.cloneElement(this.props.children, { ref: 'tooltipTarget' })}
-        <tour-beacon onClick={::this.showTooltip}><span /></tour-beacon>
+        <tour-beacon ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
   }
 
-  renderTooltip(position, children) {
-    if (this.state.appRoot) {
+  renderTooltip(children) {
+    const { appRoot, appRootClassName, tooltipActive } = this.state;
+
+    if (appRoot) {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
-      if (!this.state.tooltipActive && oldClone) {
+      if (!tooltipActive && oldClone) {
         oldClone.className = 'tour-clone';
         oldClone.addEventListener('transitionend', () => {
           oldClone.parentNode.removeChild(oldClone);
         }
         , false);
       }
-      // If we have a `className` (i.e. we have the tooltip size and are rendering onscreen)
-      // and the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
+      // If the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
       // then we fade out the background and highlight the target element of the tooltip.
       const beacons = Array.prototype.slice.call(document.getElementsByTagName('tour-beacon'));
-      if (this.state.tooltipActive) {
+      if (tooltipActive) {
         if (!oldClone) {
-          this.state.appRoot.className = `${TOOLTIP_FADED_CLASS} ${this.state.appRootClassName}`;
+          appRoot.className = `${TOOLTIP_FADED_CLASS} ${appRootClassName}`;
           const targetClone = this.getTargetClone();
           document.body.appendChild(targetClone);
           // Hide beacons while tooltip is visible
           beacons.forEach(beacon => beacon.style.display = 'none');
         }
       } else {
-        this.state.appRoot.className = this.state.appRootClassName;
+        appRoot.className = appRootClassName;
         // Show beacons again
         beacons.forEach(beacon => beacon.style.display = 'block');
       }
     }
 
-    return this.state.tooltipActive ?
-      (<TetherComponent attachment={position}>
+    return tooltipActive ?
+      (<TetherComponent attachment={this.getTooltipAttachment()}>
           {this.props.children}
           <tour-tooltip className="tour-in" ref="tooltip">{this.props.tooltipText}</tour-tooltip>
         </TetherComponent>) :
@@ -139,11 +167,11 @@ export class Beacon extends React.Component {
   }
 
   render() {
-    const { position, persistent } = this.state;
+    const { persistent } = this.state;
     if (!this.state.tooltip) {
-      return this.renderBeacon(position, persistent);
+      return this.renderBeacon(persistent);
     } else {
-      return this.renderTooltip(position, this.props.children);
+      return this.renderTooltip(this.props.children);
     }
   }
 

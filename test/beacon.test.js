@@ -4,7 +4,6 @@ import { mount } from 'enzyme';
 import { spy, stub } from 'sinon';
 import TestUtils from 'react-addons-test-utils';
 import { Beacon, BeaconConfig } from '../src/Beacon';
-import Portal from 'react-portal';
 
 function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
   return new Promise((resolve, reject) => {
@@ -24,104 +23,87 @@ function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
   });
 }
 
-let portalSpy;
-function portal() { return portalSpy.lastCall.thisValue.node.firstChild; }
-
 before(() => {
-  spy(Beacon.prototype, 'componentDidMount');
-  portalSpy = spy(Portal.prototype, 'componentDidMount');
+  spy(Beacon.prototype, 'componentWillMount');
 });
 
 after(() => {
-  Beacon.prototype.componentDidMount.restore();
-  Portal.prototype.componentDidMount.restore();
-  portalSpy = null;
+  Beacon.prototype.componentWillMount.restore();
 });
 
 describe('<Beacon />', () => {
   let wrapper;
-  let parent;
 
   beforeEach(() => {
-    parent = document.createElement('div');
-    document.body.appendChild(parent);
-    wrapper = mount(<Beacon/>, { attachTo: parent });
+    wrapper = mount(<Beacon tooltipText="tooltip"><div id="foo" /></Beacon>);
   });
 
   afterEach(() => {
-    wrapper.detach();
-    document.body.removeChild(document.body.firstChild);
+    wrapper.unmount();
   });
 
   it('renders a beacon when mounted', () => {
-    expect(Beacon.prototype.componentDidMount.calledOnce).to.equal(true);
-    expect(wrapper.state('parentEl')).not.to.be.null;
+    expect(Beacon.prototype.componentWillMount.calledOnce).to.equal(true);
     expect(wrapper.state('tooltip')).to.be(false);
     expect(wrapper.state('persistent')).to.be(undefined);
-    expect(portal().tagName).to.equal('TOUR-BEACON');
+    expect(wrapper.ref('beacon').type()).to.equal('tour-beacon');
   });
 
   it('shows a tooltip when the beacon is clicked', () => {
-    TestUtils.Simulate.click(portal());
+    wrapper.ref('beacon').simulate('click');
     expect(wrapper.state('tooltip')).to.be(true);
     expect(wrapper.state('tooltipActive')).to.be(true);
-    expect(parent.className).to.equal('');
-    expect(portal().tagName).to.equal('TOUR-TOOLTIP');
+    expect(wrapper.ref('tooltip').type()).to.equal('tour-tooltip');
   });
 
   it('hides the tooltip when the user clicks anywhere on the page', () => {
-    TestUtils.Simulate.click(portal());
+    wrapper.ref('beacon').simulate('click');
     wrapper.instance().handleClickOutside({ preventDefault: () => {}});
     expect(wrapper.state('tooltip')).to.be(true);
     expect(wrapper.state('tooltipActive')).to.be(false);
   });
 
   it('fades the app root background when "tour-overlay" class is set', (done) => {
-    parent.className = 'tour-overlay';
-    const wrapper2 = mount(<Beacon/>, { attachTo: parent });
-    TestUtils.Simulate.click(portal());
-    expect(parent.className).to.equal('tour-faded tour-overlay');
+    document.body.className = 'tour-overlay';
+    const wrapper2 = mount(<Beacon tooltipText="tooltip"><div id="bar" /></Beacon>);
+    wrapper2.ref('beacon').simulate('click');
+    expect(document.body.className).to.equal('tour-faded tour-overlay');
     wrapper2.instance().handleClickOutside({ preventDefault: () => {}});
-    expect(parent.className).to.equal('tour-overlay');
-    wrapper2.detach();
+    expect(document.body.className).to.equal('tour-overlay');
+    wrapper2.unmount();
+    document.body.className = '';
     // We need to wait for the clone to fade out and be removed
     waitsFor(() => !document.getElementById('tour-target-clone')).then(done);
   });
 
   it('clones the tooltip target when "tour-overlay" class is set', () => {
-    parent.className = 'tour-overlay';
-    const wrapper2 = mount(<Beacon/>, { attachTo: parent });
+    document.body.className = 'tour-overlay';
+    const wrapper2 = mount(<Beacon tooltipText="tooltip"><div id="bar" /></Beacon>);
     expect(document.getElementById('tour-target-clone')).to.be(null);
-    TestUtils.Simulate.click(portal());
+    wrapper2.ref('beacon').simulate('click');
     expect(document.getElementById('tour-target-clone')).not.to.be(null);
-    wrapper2.detach();
+    wrapper2.unmount();
   });
 });
 
 describe('Context', () => {
   let wrapper;
-  let parent;
   const open = stub().returns({});
   const mockIndexedDB = { open };
-  const config = mount(<BeaconConfig persistent position="bottom" indexedDB={mockIndexedDB} />);
+  const config = mount(<BeaconConfig persistent indexedDB={mockIndexedDB} />);
 
   beforeEach(() => {
-    parent = document.createElement('div');
-    document.body.appendChild(parent);
-    wrapper = mount(<Beacon>some text</Beacon>, {
-      attachTo: parent,
+    wrapper = mount(<Beacon tooltipText="some text"><div id="foo" /></Beacon>, {
       context: config.instance().getChildContext()
     });
   });
 
   afterEach(() => {
-    wrapper.detach();
-    document.body.removeChild(document.body.firstChild);
+    wrapper.unmount();
   });
 
   it('overrides the default values with the context if any', () => {
     expect(wrapper.state('persistent')).to.be(true);
-    expect(wrapper.state('position')).to.be('bottom');
     expect(open.calledOnce).to.equal(true);
   });
 });
