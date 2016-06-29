@@ -1,4 +1,4 @@
-import React, { Children, PropTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
@@ -13,10 +13,10 @@ const TARGET_CLONE_ID = 'tour-target-clone';
 // If margins are within tolerance then we center tooltip
 const TOOLTIP_TOLERANCE = 50;
 
-export class Beacon extends React.Component {
+export class Beacon extends Component {
 
   static propTypes = {
-    persistent: PropTypes.bool,
+    persistent: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     tooltipText: PropTypes.string.isRequired,
     children: React.PropTypes.element.isRequired
   }
@@ -43,9 +43,7 @@ export class Beacon extends React.Component {
   componentWillMount() {
     const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
     const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
-    const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
-    const appRootClassName = appRoot && appRoot.className;
-    this.setState({ persistent, indexedDB, appRoot, appRootClassName });
+    this.setState({ persistent, indexedDB });
 
     if (persistent) {
       // Retrieve the state of the badge from the database
@@ -71,13 +69,21 @@ export class Beacon extends React.Component {
   }
 
   componentDidMount() {
-    this.targetElement = this.getTargetElement();
+    const appRoot = document.querySelector(`.${TOOLTIP_OVERLAY_CLASS}`);
+    const appRootClassName = appRoot && appRoot.className;
+    if (this.state.appRoot !== appRoot) {
+      this.setState({ appRoot, appRootClassName }); // eslint-disable-line react/no-did-mount-set-state
+    }
+    const targetElement = this.getTargetElement();
+    if (this.state.targetElement !== targetElement) {
+      this.setState({ targetElement }); // eslint-disable-line react/no-did-mount-set-state
+    }
   }
 
   componentWillUpdate() {
     // If margins are similar then center tooltip
-    if (this.targetElement) {
-      const bounds = this.targetElement.getBoundingClientRect();
+    if (this.state.targetElement) {
+      const bounds = this.state.targetElement.getBoundingClientRect();
       const centerTooltip = Math.abs(window.innerWidth - bounds.right - bounds.left) < TOOLTIP_TOLERANCE;
       if (this.state.centerTooltip !== centerTooltip) {
         this.setState({ centerTooltip });
@@ -86,33 +92,34 @@ export class Beacon extends React.Component {
   }
 
   componentDidUpdate() {
-    this.targetElement = this.getTargetElement();
-  }
-
-  getTargetElement() {
-    if (!this.refs.tooltipTarget) {
-      return null;
-    } else if (this.refs.tooltipTarget instanceof React.Component) {
-      return ReactDOM.findDOMNode(this.refs.tooltipTarget);
-    } else {
-      return this.refs.tooltipTarget;
+    const targetElement = this.getTargetElement();
+    if (this.state.targetElement !== targetElement) {
+      this.setState({ targetElement }); // eslint-disable-line react/no-did-update-set-state
     }
   }
 
+  getTargetElement() {
+    return ReactDOM.findDOMNode(this);
+  }
+
   getTargetClone() {
-    const clone = this.targetElement.cloneNode(true);
+    const targetElement = this.state.targetElement;
+    if (!targetElement) {
+      return null;
+    }
+    const clone = targetElement.cloneNode(true);
     clone.removeAttribute('id');
+    clone.id = TARGET_CLONE_ID;
     // Remove `-webkit-background-composite` style since browser complains about it being deprecated
-    const computedStyle = getComputedStyle(this.targetElement).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
+    const computedStyle = getComputedStyle(targetElement).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
     clone.setAttribute('style', computedStyle);
     clone.style.position = 'absolute';
-    clone.style.left = `${this.targetElement.getBoundingClientRect().left + window.pageXOffset}px`;
-    clone.style.top = `${this.targetElement.getBoundingClientRect().top + window.pageYOffset}px`;
+    clone.style.left = `${targetElement.getBoundingClientRect().left + window.pageXOffset}px`;
+    clone.style.top = `${targetElement.getBoundingClientRect().top + window.pageYOffset}px`;
     clone.style.margin = '0px';
-    clone.style.zIndex = this.targetElement.zIndex + 1;
+    clone.style.zIndex = targetElement.zIndex + 1;
     clone.className = 'tour-clone';
     setTimeout(() => clone.className = 'tour-clone tour-highlighted', 0);
-    clone.id = TARGET_CLONE_ID;
     return clone;
   }
 
@@ -121,11 +128,11 @@ export class Beacon extends React.Component {
       // We need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
-      return Children.toArray(this.props.children)[0];
+      return this.props.children;
     }
     return (
       <TetherComponent attachment="middle center" constraints={[{ to: 'window' }]}>
-        {React.cloneElement(this.props.children, { ref: 'tooltipTarget' })}
+        {this.props.children}
         <tour-beacon ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
