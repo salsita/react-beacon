@@ -1,11 +1,10 @@
-import React, { PropTypes } from 'react';
+import { Component, PropTypes } from 'react';
 
-export default class BeaconConfig extends React.Component {
+export default class BeaconConfig extends Component {
   static propTypes = {
-    position: PropTypes.string,
     persistent: PropTypes.bool,
     indexedDB: PropTypes.object,
-    children: PropTypes.node
+    children: PropTypes.node.isRequired
   }
 
   static childContextTypes = {
@@ -13,21 +12,16 @@ export default class BeaconConfig extends React.Component {
   }
 
   static defaultProps = {
-    position: 'right',
     persistent: false,
     indexedDB: indexedDB
   }
 
   getChildContext() {
-    const { position, persistent, indexedDB } = this.props;
-    return { beacon: { position, persistent, indexedDB }};
+    const { persistent, indexedDB } = this.props;
+    return { beacon: { persistent, indexedDB }};
   }
 
   render() {
-    return (
-      <div>
-        {this.props.children}
-      </div>
-    );
+    return this.props.children;
   }
 }
