@@ -79,7 +79,9 @@ export class Beacon extends React.Component {
     if (this.targetElement) {
       const bounds = this.targetElement.getBoundingClientRect();
       const centerTooltip = Math.abs(window.innerWidth - bounds.right - bounds.left) < TOOLTIP_TOLERANCE;
-      this.setState({ centerTooltip });
+      if (this.state.centerTooltip !== centerTooltip) {
+        this.setState({ centerTooltip });
+      }
     }
   }
 
