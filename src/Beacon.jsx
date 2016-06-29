@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React, { Children, PropTypes } from 'react';
+import ReactDOM from 'react-dom';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
@@ -9,6 +10,8 @@ import '../assets/style.styl';
 const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
 const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
+// If margins are within tolerance then we center tooltip
+const TOOLTIP_TOLERANCE = 50;
 
 export class Beacon extends React.Component {
 
@@ -31,6 +34,7 @@ export class Beacon extends React.Component {
       tooltipHeight: 0,
       tooltipWidth: 0,
       tooltipHidden: false,
+      centerTooltip: false,
       appRoot: null,
       appRootClassName: ''
     };
@@ -66,18 +70,44 @@ export class Beacon extends React.Component {
     }
   }
 
+  componentDidMount() {
+    this.targetElement = this.getTargetElement();
+  }
+
+  componentWillUpdate() {
+    // If margins are similar then center tooltip
+    if (this.targetElement) {
+      const bounds = this.targetElement.getBoundingClientRect();
+      const centerTooltip = Math.abs(window.innerWidth - bounds.right - bounds.left) < TOOLTIP_TOLERANCE;
+      this.setState({ centerTooltip });
+    }
+  }
+
+  componentDidUpdate() {
+    this.targetElement = this.getTargetElement();
+  }
+
+  getTargetElement() {
+    if (!this.refs.tooltipTarget) {
+      return null;
+    } else if (this.refs.tooltipTarget instanceof React.Component) {
+      return ReactDOM.findDOMNode(this.refs.tooltipTarget);
+    } else {
+      return this.refs.tooltipTarget;
+    }
+  }
+
   getTargetClone() {
-    const tooltipTarget = this.refs.tooltipTarget;
-    const clone = tooltipTarget.cloneNode(true);
+    const clone = this.targetElement.cloneNode(true);
     clone.removeAttribute('id');
     // Remove `-webkit-background-composite` style since browser complains about it being deprecated
-    const computedStyle = getComputedStyle(tooltipTarget).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
+    const computedStyle = getComputedStyle(this.targetElement).cssText.replace(/-webkit-background-composite: [^;]+;/, '');
     clone.setAttribute('style', computedStyle);
     clone.style.position = 'absolute';
-    clone.style.left = `${tooltipTarget.getBoundingClientRect().left + window.pageXOffset}px`;
-    clone.style.top = `${tooltipTarget.getBoundingClientRect().top + window.pageYOffset}px`;
+    clone.style.left = `${this.targetElement.getBoundingClientRect().left + window.pageXOffset}px`;
+    clone.style.top = `${this.targetElement.getBoundingClientRect().top + window.pageYOffset}px`;
     clone.style.margin = '0px';
-    clone.style.zIndex = tooltipTarget.zIndex + 1;
+    clone.style.zIndex = this.targetElement.zIndex + 1;
     clone.className = 'tour-clone';
     setTimeout(() => clone.className = 'tour-clone tour-highlighted', 0);
     clone.id = TARGET_CLONE_ID;
@@ -89,14 +119,12 @@ export class Beacon extends React.Component {
       // We need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
-      return false;
+      return Children.toArray(this.props.children)[0];
     }
     return (
-      <TetherComponent attachment="middle center" constraints={[{ to: 'scrollParent' }]}>
+      <TetherComponent attachment="middle center" constraints={[{ to: 'window' }]}>
         {React.cloneElement(this.props.children, { ref: 'tooltipTarget' })}
-        <div>
-          <tour-beacon ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
-        </div>
+        <tour-beacon ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
   }
@@ -131,7 +159,7 @@ export class Beacon extends React.Component {
     const tooltipClass = tooltipActive ? 'tour-in' : !this.state.tooltipHidden && 'tour-out';
     return (
       <TetherComponent
-        attachment="top left"
+        attachment={this.state.centerTooltip ? 'top center' : 'top left'}
         constraints={[
           {
             to: 'scrollParent',
@@ -140,9 +168,7 @@ export class Beacon extends React.Component {
         ]}
       >
         {this.props.children}
-        <div>
-          <tour-tooltip class={tooltipClass} ref="tooltip">{this.props.tooltipText}</tour-tooltip>
-        </div>
+        <tour-tooltip class={tooltipClass} ref="tooltip" dangerouslySetInnerHTML={{__html: this.props.tooltipText}} />
       </TetherComponent>
     );
   }

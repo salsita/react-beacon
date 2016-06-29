@@ -16,21 +16,25 @@ class Test extends React.Component {
   }
 
   render() {
-    return (<div>
-      <h1>Scrolling Beacons</h1>
-      <Beacon tooltipText="This is a tooltip">
-        {this.renderBlock('beacon_1')}
-      </Beacon>
-      <Beacon tooltipText="This is a tooltip">
-        {this.renderBlock('beacon_2')}
-      </Beacon>
-      <Beacon tooltipText="This is a tooltip">
-        {this.renderBlock('beacon_3')}
-      </Beacon>
-      <Beacon tooltipText="This is a tooltip">
-        {this.renderBlock('beacon_4')}
-      </Beacon>
-    </div>);
+    return (
+      <div style={{height: '300px', width: '300px', 'overflow-x': 'auto', 'overflow-y': 'auto'}}>
+        <div style={{width: '1000px'}}>
+          <h1>Scrolling Beacons</h1>
+          <Beacon tooltipText="This is a tooltip">
+            {this.renderBlock('beacon_1')}
+          </Beacon>
+          <Beacon tooltipText="This is a tooltip">
+            {this.renderBlock('beacon_2')}
+          </Beacon>
+          <Beacon tooltipText="This is a tooltip">
+            {this.renderBlock('beacon_3')}
+          </Beacon>
+          <Beacon tooltipText="This is a tooltip">
+            {this.renderBlock('beacon_4')}
+          </Beacon>
+        </div>
+      </div>
+    );
   }
 }
 
