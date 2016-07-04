@@ -1,4 +1,4 @@
-import { Component, PropTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 
 export default class BeaconConfig extends Component {
   static propTypes = {
@@ -22,6 +22,10 @@ export default class BeaconConfig extends Component {
   }
 
   render() {
-    return this.props.children;
+    return (
+      <div>
+        {this.props.children}
+      </div>
+    );
   }
 }

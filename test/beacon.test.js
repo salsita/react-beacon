@@ -2,7 +2,6 @@ import React from 'react';
 import expect from 'expect.js';
 import { mount } from 'enzyme';
 import { spy, stub } from 'sinon';
-import TestUtils from 'react-addons-test-utils';
 import { Beacon, BeaconConfig } from '../src/Beacon';
 
 function waitsFor(conditionFunc, maxTime = 2000, interval = 100) {
