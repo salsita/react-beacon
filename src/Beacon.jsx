@@ -213,6 +213,7 @@ export class Beacon extends React.Component {
         <Portal isOpened onOpen={this.updateState.bind(this, this.props, this.state)}>
           <tour-tooltip ref="tooltip" class={className} style={style}>
             {children}
+            <tour-settings>Don't show these hints</tour-settings>
           </tour-tooltip>
         </Portal>
       </div>
