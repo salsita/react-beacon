@@ -1,7 +1,8 @@
 tour-beacon
+  display block
   height 40px
   width 40px
-  z-index 1000
+  cursor pointer
 
   span
     content ''
@@ -31,8 +32,8 @@ tour-backdrop
   background rgba(0, 0, 0, .45)
 
 tour-tooltip
+  display block
   position relative
-  z-index 999
   max-width 250px
   background-color #fff
   color #545454
@@ -42,6 +43,8 @@ tour-tooltip
   box-shadow 0 8px 6px -6px rgba(0, 0, 0, .4)
   text-align center
   cursor default
+  animation-fill-mode both
+  opacity 0 // starts invisible to be animated in
 
   &:before
   &:after
@@ -51,110 +54,110 @@ tour-tooltip
     height 0
     position absolute
 
-  // Top chevron
-  &.tour-top:before
-  &.tour-top:after
-    bottom 100%
-    left 50%
-    transform translateX(-50%)
-
-  &.tour-top:before
-    border-left 6px solid transparent
-    border-right 6px solid transparent
-    border-bottom 6px solid #fff
-    z-index 1
-
-  &.tour-top:after
-    border-left 7px solid transparent
-    border-right 7px solid transparent
-    border-bottom 7px solid #ddd
-
-  // Right chevron
-  &.tour-right:before
-  &.tour-right:after
+  // Left
+  .tether-target-attached-left &:before
+  .tether-target-attached-left &:after
     left 100%
     top 50%
     transform translateY(-50%)
 
-  &.tour-right:before
+  .tether-target-attached-left &:before
     border-top 6px solid transparent
     border-bottom 6px solid transparent
     border-left 6px solid #fff
+    border-right none
     z-index 1
 
-  &.tour-right:after
+  .tether-target-attached-left &:after
     border-top 7px solid transparent
     border-bottom 7px solid transparent
     border-left 7px solid #ddd
+    border-right none
 
-  // Bottom chevron
-  &.tour-bottom:before
-  &.tour-bottom:after
-    top 100%
-    left 50%
-    transform translateX(-50%)
-
-  &.tour-bottom:before
-    border-left 6px solid transparent
-    border-right 6px solid transparent
-    border-top 6px solid #fff
-    z-index 1
-
-  &.tour-bottom:after
-    border-left 7px solid transparent
-    border-right 7px solid transparent
-    border-top 7px solid #ddd
-
-  // Left chevron
-  &.tour-left:before
-  &.tour-left:after
+  // Right
+  .tether-target-attached-right &:before
+  .tether-target-attached-right &:after
     right 100%
     top 50%
     transform translateY(-50%)
 
-  &.tour-left:before
+  .tether-target-attached-right &:before
     border-top 6px solid transparent
     border-bottom 6px solid transparent
     border-right 6px solid #fff
+    border-left 0
     z-index 1
 
-  &.tour-left:after
+  .tether-target-attached-right &:after
     border-top 7px solid transparent
     border-bottom 7px solid transparent
     border-right 7px solid #ddd
+    border-left 0
 
-  // Before, After
-  // Top Bottom
-  &.tour-top.tour-start:before
-  &.tour-top.tour-start:after
-  &.tour-bottom.tour-start:before
-  &.tour-bottom.tour-start:after
-    left 0
-    transform none
+  // Top
+  .tether-target-attached-top &:before
+  .tether-target-attached-top &:after
+    top 100%
+    left 50%
+    transform translateX(-50%)
 
-  &.tour-top.tour-end:before
-  &.tour-top.tour-end:after
-  &.tour-bottom.tour-end:before
-  &.tour-bottom.tour-end:after
+  .tether-target-attached-top &:before
+    border-left 6px solid transparent
+    border-right 6px solid transparent
+    border-top 6px solid #fff
+    border-bottom none
+    z-index 1
+
+  .tether-target-attached-top &:after
+    border-left 7px solid transparent
+    border-right 7px solid transparent
+    border-top 7px solid #ddd
+    border-bottom none
+
+  // Bottom
+  .tether-target-attached-bottom &:before
+  .tether-target-attached-bottom &:after
+    bottom 100%
+    left 50%
+    transform translateX(-50%)
+
+  .tether-target-attached-bottom &:before
+    border-left 6px solid transparent
+    border-right 6px solid transparent
+    border-bottom 6px solid #fff
+    border-top none
+    z-index 1
+
+  .tether-target-attached-bottom &:after
+    border-left 7px solid transparent
+    border-right 7px solid transparent
+    border-bottom 7px solid #ddd
+    border-top none
+
+  // Diagonals
+  // Top/Bottom Left
+  .tether-target-attached-top.tether-target-attached-left &:before
+  .tether-target-attached-top.tether-target-attached-left &:after
+  .tether-target-attached-bottom.tether-target-attached-left &:before
+  .tether-target-attached-bottom.tether-target-attached-left &:after
     left auto
-    right 0
+    right 10px
     transform none
 
-  // Right Left
-  &.tour-right.tour-start:before
-  &.tour-right.tour-start:after
-  &.tour-left.tour-start:before
-  &.tour-left.tour-start:after
-    top 0
+  // Top/Bottom Right
+  .tether-target-attached-top.tether-target-attached-right &:before
+  .tether-target-attached-top.tether-target-attached-right &:after
+  .tether-target-attached-bottom.tether-target-attached-right &:before
+  .tether-target-attached-bottom.tether-target-attached-right &:after
+    left 10px
     transform none
 
-  &.tour-right.tour-end:before
-  &.tour-right.tour-end:after
-  &.tour-left.tour-end:before
-  &.tour-left.tour-end:after
+  // Bottom offset
+  .tether-target-attached-bottom.tether-target-attached-left &:before
+  .tether-target-attached-bottom.tether-target-attached-left &:after
+  .tether-target-attached-bottom.tether-target-attached-right &:before
+  .tether-target-attached-bottom.tether-target-attached-right &:after
     top auto
-    bottom 0
-    transform none
 
   p
     margin-bottom 15px
@@ -195,8 +198,6 @@ tour-tooltip
     transition background-color 500ms ease-in
 
   &.tour-faded
-    -webkit-filter grayscale(1) blur(2px)
-
     &:after
       width 100vw
       height 100vh
@@ -208,26 +209,30 @@ $animMotionStep = 30px
 $animEasingIn = ease-out
 $animEasingOut = ease-in
 $animBank = {
-  'tour-top': translateY(-($animMotionStep)),
-  'tour-top_tour-start': translate($animMotionStep, -($animMotionStep)),
-  'tour-top_tour-end': translate(-($animMotionStep), -($animMotionStep)),
-  'tour-right': translateX($animMotionStep),
-  'tour-right_tour-start': translate($animMotionStep, $animMotionStep),
-  'tour-right_tour-end': translate($animMotionStep, -($animMotionStep)),
-  'tour-bottom': translateY($animMotionStep),
-  'tour-bottom_tour-start': translate($animMotionStep, $animMotionStep),
-  'tour-bottom_tour-end': translate(-($animMotionStep), $animMotionStep),
-  'tour-left': translateX(-($animMotionStep)),
-  'tour-left_tour-start': translate(-($animMotionStep), $animMotionStep),
-  'tour-left_tour-end': translate(-($animMotionStep), -($animMotionStep))
+  '_tether-target-attached-bottom': translateY(-($animMotionStep)),
+  '_tether-target-attached-bottom_tether-target-attached-left': translate($animMotionStep, -($animMotionStep)),
+  '_tether-target-attached-bottom_tether-target-attached-right': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-target-attached-left': translateX($animMotionStep),
+  '_tether-target-attached-left_tether-target-attached-top': translate($animMotionStep, $animMotionStep),
+  '_tether-target-attached-left_tether-target-attached-bottom': translate($animMotionStep, -($animMotionStep)),
+  '_tether-target-attached-top': translateY($animMotionStep),
+  '_tether-target-attached-top_tether-target-attached-left': translate($animMotionStep, $animMotionStep),
+  '_tether-target-attached-top_tether-target-attached-right': translate(-($animMotionStep), $animMotionStep),
+  '_tether-target-attached-right': translateX(-($animMotionStep)),
+  '_tether-target-attached-right_tether-target-attached-top': translate(-($animMotionStep), $animMotionStep),
+  '_tether-target-attached-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep))
 }
 
 // Generator
 for $name, $motion in $animBank
-  {'.' + replace('_', '.', $name)}.tour-in
-    animation fadeIn- + $name $animDuration $animEasingIn
-  {'.' + replace('_', '.', $name)}.tour-out
-    animation fadeOut- + $name $animDuration $animEasingOut forwards
+  {replace('_', '.', $name)} tour-tooltip.tour-in
+    animation-name fadeIn- + $name
+    animation-duration $animDuration
+    animation-timing-function $animEasingIn
+  {replace('_', '.', $name)} tour-tooltip.tour-out
+    animation-name fadeOut- + $name
+    animation-duration $animDuration
+    animation-timing-function $animEasingOut
   @keyframes fadeIn-{$name}
     from
       transform $motion scale(.8)
@@ -236,6 +241,9 @@ for $name, $motion in $animBank
       transform none
       opacity 1
   @keyframes fadeOut-{$name}
+    from
+      transform none
+      opacity 1
     to
       transform $motion scale(.8)
       opacity 0
@@ -251,3 +259,17 @@ for $name, $motion in $animBank
   100%
     transform scale(2.5)
     opacity 0
+
+// Tether
+
+.tether-element
+  z-index 999
+
+.tether-out-of-bounds tour-beacon
+  opacity: 0
+
+.tour-faded ~ div > tour-beacon
+  display: none
+
+.tether-target-tooltip.tether-enabled
+  visibility: hidden

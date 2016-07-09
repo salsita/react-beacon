@@ -29,14 +29,23 @@ export const sharedConfig = {
 function getWebpackConfig() {
   if (TARGET === 'start') {
     return {
-      entry: [
-        'webpack-dev-server/client?http://localhost:8080',
-        'webpack/hot/only-dev-server',
-        './examples/simple.jsx'
-      ],
+      debug: true,
+      devtool: 'inline-source-map',
+      entry: {
+        simple: [
+          'webpack-dev-server/client?http://localhost:8080',
+          'webpack/hot/only-dev-server',
+          './examples/simple.jsx'
+        ],
+        scroll: [
+          'webpack-dev-server/client?http://localhost:8080',
+          'webpack/hot/only-dev-server',
+          './examples/scroll.jsx'
+        ]
+      },
       inline: true,
       output: {
-        filename: 'simple.js'
+        filename: '[name].js'
       },
       plugins: [
         new webpack.HotModuleReplacementPlugin()
