@@ -14,7 +14,7 @@ const TOOLTIP_TOLERANCE = 50;
 
 function deepCloneNode(node, parent, fn) {
   const clone = fn(node, parent);
-  const childNodes = [...node.childNodes];
+  const childNodes = Array.prototype.slice.call(node.childNodes);
   childNodes.forEach(childNode => deepCloneNode(childNode, clone, fn));
   return clone;
 }
