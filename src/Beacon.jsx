@@ -22,8 +22,9 @@ function deepCloneNode(node, parent, fn) {
 export class Beacon extends Component {
 
   static propTypes = {
+    active: PropTypes.bool,
     persistent: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    tooltipText: PropTypes.string.isRequired,
+    tooltipText: PropTypes.node.isRequired,
     children: React.PropTypes.element.isRequired
   }
 
@@ -47,9 +48,10 @@ export class Beacon extends Component {
   }
 
   componentWillMount() {
+    const inactive = (this.props.active === false) || (this.context.beacon && (this.context.beacon.active === false));
     const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
     const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
-    this.setState({ persistent, indexedDB });
+    this.setState({ inactive, persistent, indexedDB });
 
     if (persistent) {
       // Retrieve the state of the badge from the database
@@ -176,7 +178,7 @@ export class Beacon extends Component {
   }
 
   renderBeacon(persistent) {
-    if (persistent && !this.state.hash) {
+    if (this.state.inactive || (persistent && !this.state.hash)) {
       // We need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
@@ -228,7 +230,10 @@ export class Beacon extends Component {
     return (this.state.tooltipAttachment &&
       <TetherComponent {...tetherProps}>
         {this.props.children}
-        <tour-tooltip class={tooltipClass} ref="tooltip" dangerouslySetInnerHTML={{__html: this.props.tooltipText}} />
+        <tour-tooltip class={tooltipClass} ref="tooltip">
+          {this.props.tooltipText}
+          <tour-settings>Don't show these hints</tour-settings>
+        </tour-tooltip>
       </TetherComponent>
     );
   }
