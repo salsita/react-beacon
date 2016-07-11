@@ -1,5 +1,6 @@
 import React, { Component, Children, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import ReactDOMServer from 'react-dom/server';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
@@ -96,6 +97,16 @@ export class Beacon extends Component {
       if (this.state.targetElement !== targetElement) {
         this.setState({ targetElement }); // eslint-disable-line react/no-did-update-set-state
       }
+    }
+    const targetElement = this.getTargetElement();
+    const targetBounds = targetElement.getBoundingClientRect();
+    const boundsChanged =
+      this.state.targetBounds.top !== targetBounds.top ||
+      this.state.targetBounds.bottom !== targetBounds.bottom ||
+      this.state.targetBounds.left !== targetBounds.left ||
+      this.state.targetBounds.right !== targetBounds.right;
+    if (boundsChanged || (this.state.targetElement !== targetElement)) {
+      this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
     }
   }
 
@@ -237,7 +248,9 @@ export class Beacon extends Component {
   }
 
   loadHash(persistent) {
-    const hash = persistent === true ? sha1(JSON.stringify(this.props.tooltipText)) : persistent;
+    const { tooltipText } = this.props;
+    const text = typeof(tooltipText) === 'string' ? tooltipText : ReactDOMServer.renderToStaticMarkup(tooltipText);
+    const hash = persistent === true ? sha1(text) : persistent;
 
     const transaction = this.state.database.transaction(['beacons']);
     const objectStore = transaction.objectStore('beacons');
