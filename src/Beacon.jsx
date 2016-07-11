@@ -168,7 +168,8 @@ export class Beacon extends Component {
 
   renderBeacon(persistent) {
     if (this.state.inactive || (persistent && !this.state.hash)) {
-      // We need to wait until the hash is set before we render.
+      // If the beacon is inactive then don't render it.
+      // Otherwise we need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
       return Children.toArray(this.props.children)[0];
