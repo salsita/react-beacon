@@ -263,6 +263,7 @@ for $name, $motion in $animBank
 // Tether
 
 .tether-element
+  position fixed !important // absolute creates a scrollable body overflow bug in Android
   z-index 999
 
 .tether-out-of-bounds tour-beacon
