@@ -13,6 +13,11 @@ const TARGET_CLONE_ID = 'tour-target-clone';
 // If margins are within tolerance then we center tooltip
 const TOOLTIP_TOLERANCE = 50;
 
+const HASH_CHECK_PENDING = 'PENDING';
+const HASH_CHECK_NOT_PERSISTENT = 'NOT_PERSISTENT';
+const HASH_CHECK_FOUND = 'FOUND';
+const HASH_CHECK_NOT_FOUND = 'NOT_FOUND';
+
 function deepCloneNode(node, parent, fn) {
   const clone = fn(node, parent);
   const childNodes = Array.prototype.slice.call(node.childNodes);
@@ -23,8 +28,8 @@ function deepCloneNode(node, parent, fn) {
 export class Beacon extends Component {
 
   static propTypes = {
+    id: PropTypes.string,
     active: PropTypes.bool,
-    persistent: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     tooltipText: PropTypes.node.isRequired,
     children: React.PropTypes.element.isRequired
   }
@@ -44,17 +49,17 @@ export class Beacon extends Component {
       tooltipHidden: false,
       tooltipAttachment: null,
       appRoot: null,
-      appRootClassName: ''
+      appRootClassName: '',
+      hashCheck: HASH_CHECK_PENDING
     };
   }
 
   componentWillMount() {
     const inactive = (this.props.active === false) || (this.context.beacon && (this.context.beacon.active === false));
-    const persistent = this.props.persistent || (this.context.beacon && this.context.beacon.persistent);
-    const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
-    this.setState({ inactive, persistent, indexedDB });
+    const persistent = this.context.beacon && this.context.beacon.persistent;
+    this.setState({ inactive, persistent });
 
-    this.checkHash();
+    this.loadHash(persistent);
   }
 
   componentDidMount() {
@@ -77,8 +82,28 @@ export class Beacon extends Component {
     }
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.tooltip) {
+      // Always update if the tooltip is visible
+      return true;
+    } else if (Object.keys(this.props).some(key => this.props[key] !== nextProps[key])) {
+      // Update if any prop has changed
+      return true;
+    } else if (this.state.inactive !== nextState.inactive || this.state.hashCheck !== this.checkHashStatus()) {
+      // Update if inactive state or hash status have changed. Other state changes do not affect
+      // the beacon view.
+      return true;
+    } else {
+      // In all other cases we can optimize by skipping the update
+      return false;
+    }
+  }
+
   componentWillUpdate() {
-    this.checkHash();
+    const hashCheck = this.checkHashStatus();
+    if (this.state.hashCheck !== hashCheck) {
+      this.setState({ hashCheck });
+    }
 
     // If margins are similar then center tooltip
     if (this.state.targetBounds) {
@@ -99,14 +124,16 @@ export class Beacon extends Component {
       }
     }
     const targetElement = this.getTargetElement();
-    const targetBounds = targetElement.getBoundingClientRect();
-    const boundsChanged =
-      this.state.targetBounds.top !== targetBounds.top ||
-      this.state.targetBounds.bottom !== targetBounds.bottom ||
-      this.state.targetBounds.left !== targetBounds.left ||
-      this.state.targetBounds.right !== targetBounds.right;
-    if (boundsChanged || (this.state.targetElement !== targetElement)) {
-      this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
+    if (targetElement) {
+      const targetBounds = targetElement.getBoundingClientRect();
+      const boundsChanged =
+        this.state.targetBounds.top !== targetBounds.top ||
+        this.state.targetBounds.bottom !== targetBounds.bottom ||
+        this.state.targetBounds.left !== targetBounds.left ||
+        this.state.targetBounds.right !== targetBounds.right;
+      if (boundsChanged || (this.state.targetElement !== targetElement)) {
+        this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
+      }
     }
   }
 
@@ -177,8 +204,15 @@ export class Beacon extends Component {
     return targetClone;
   }
 
-  renderBeacon(persistent) {
-    if (this.state.inactive || (persistent && !this.state.hash)) {
+  getHash() {
+    const { tooltipText, id } = this.props;
+    const text = typeof(tooltipText) === 'string' ? tooltipText : ReactDOMServer.renderToStaticMarkup(tooltipText);
+    return id || sha1(text);
+  }
+
+  renderBeacon() {
+    const { inactive, hashCheck } = this.state;
+    if (inactive || (hashCheck === HASH_CHECK_PENDING) || (hashCheck === HASH_CHECK_FOUND)) {
       // If the beacon is inactive then don't render it.
       // Otherwise we need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
@@ -220,7 +254,7 @@ export class Beacon extends Component {
       }
     }
 
-    const tooltipClass = tooltipActive ? 'tour-in' : !this.state.tooltipHidden && 'tour-out';
+    const tooltipClass = tooltipActive ? 'tour-in' : (!this.state.tooltipHidden && 'tour-out') || 'inactive';
     const baseProps = {
       attachment: this.state.tooltipAttachment,
       classes: { target: 'tether-target-tooltip' },
@@ -239,55 +273,38 @@ export class Beacon extends Component {
   }
 
   render() {
-    const { persistent } = this.state;
     if (!this.state.tooltip) {
-      return this.renderBeacon(persistent);
+      return this.renderBeacon();
     } else {
       return this.renderTooltip();
     }
   }
 
   loadHash(persistent) {
-    const { tooltipText } = this.props;
-    const text = typeof(tooltipText) === 'string' ? tooltipText : ReactDOMServer.renderToStaticMarkup(tooltipText);
-    const hash = persistent === true ? sha1(text) : persistent;
-
-    const transaction = this.state.database.transaction(['beacons']);
-    const objectStore = transaction.objectStore('beacons');
-    objectStore.get(hash).onsuccess = (event) => {
-      if (!event.target.result) {
-        if (!this.state.hash) {
-          this.setState({ hash });
+    if (persistent) {
+      this.context.beacon.loadHash(this.getHash(), found => {
+        const hashCheck = found ? HASH_CHECK_FOUND : HASH_CHECK_NOT_FOUND;
+        if (hashCheck !== this.state.hashCheck) {
+          this.setState({ hashCheck });
         }
-      } else {
-        if (this.state.hash) {
-          this.setState({ hash: null });
-        }
-      }
-    };
+      });
+    } else {
+      this.setState({ hashCheck: HASH_CHECK_NOT_PERSISTENT });
+    }
   }
 
-  checkHash() {
-    const persistent = this.state.persistent;
-    if (persistent) {
-      // Retrieve the state of the badge from the database
-      // If `persistent` is `true` then we use the hash of the component's children
-      // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
-      if (!this.state.database) {
-        const request = indexedDB.open('react-beacon');
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          db.createObjectStore('beacons');
-        };
-        request.onsuccess = () => {
-          if (!this.state.database) {
-            this.setState({ database: request.result });
-          }
-          this.loadHash(persistent);
-        };
+  checkHashStatus() {
+    if (this.state.persistent) {
+      const cachedHash = this.context.beacon.checkHash(this.getHash());
+      if (cachedHash === false) {
+        return HASH_CHECK_PENDING;
+      } else if (cachedHash === null) {
+        return HASH_CHECK_NOT_FOUND;
       } else {
-        this.loadHash(persistent);
+        return HASH_CHECK_FOUND;
       }
+    } else {
+      return HASH_CHECK_NOT_PERSISTENT;
     }
   }
 
@@ -301,10 +318,8 @@ export class Beacon extends Component {
   showTooltip(event) {
     event.preventDefault();
     this.setState({ tooltip: true });
-    if (this.state.hash) {
-      // Store the hash so we know this beacon has been clicked
-      const transaction = this.state.database.transaction(['beacons'], 'readwrite');
-      transaction.objectStore('beacons').add(true, this.state.hash);
+    if (this.state.persistent) {
+      this.context.beacon.storeHash(this.getHash());
     }
   }
 }
