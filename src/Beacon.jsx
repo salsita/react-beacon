@@ -1,5 +1,6 @@
 import React, { Component, Children, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
+import ReactDOMServer from 'react-dom/server';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
@@ -53,27 +54,7 @@ export class Beacon extends Component {
     const indexedDB = (this.context.beacon && this.context.beacon.indexedDB) || window.indexedDB;
     this.setState({ inactive, persistent, indexedDB });
 
-    if (persistent) {
-      // Retrieve the state of the badge from the database
-      // If `persistent` is `true` then we use the hash of the component's children
-      // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
-      const hash = persistent === true ? sha1(JSON.stringify(this.props.tooltipText)) : persistent;
-      const request = indexedDB.open('react-beacon');
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        db.createObjectStore('beacons');
-      };
-      request.onsuccess = () => {
-        this.setState({ database: request.result });
-        const transaction = this.state.database.transaction(['beacons']);
-        const objectStore = transaction.objectStore('beacons');
-        objectStore.get(hash).onsuccess = (event) => {
-          if (!event.target.result) {
-            this.setState({ hash });
-          }
-        };
-      };
-    }
+    this.checkHash();
   }
 
   componentDidMount() {
@@ -89,7 +70,16 @@ export class Beacon extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    const inactive = (nextProps.active === false) || (this.context.beacon && (this.context.beacon.active === false));
+    if (inactive !== this.state.inactive) {
+      this.setState({ inactive });
+    }
+  }
+
   componentWillUpdate() {
+    this.checkHash();
+
     // If margins are similar then center tooltip
     if (this.state.targetBounds) {
       const verticalAttachment = this.getVerticalAttachment(this.state.targetBounds);
@@ -107,6 +97,16 @@ export class Beacon extends Component {
       if (this.state.targetElement !== targetElement) {
         this.setState({ targetElement }); // eslint-disable-line react/no-did-update-set-state
       }
+    }
+    const targetElement = this.getTargetElement();
+    const targetBounds = targetElement.getBoundingClientRect();
+    const boundsChanged =
+      this.state.targetBounds.top !== targetBounds.top ||
+      this.state.targetBounds.bottom !== targetBounds.bottom ||
+      this.state.targetBounds.left !== targetBounds.left ||
+      this.state.targetBounds.right !== targetBounds.right;
+    if (boundsChanged || (this.state.targetElement !== targetElement)) {
+      this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
     }
   }
 
@@ -179,7 +179,8 @@ export class Beacon extends Component {
 
   renderBeacon(persistent) {
     if (this.state.inactive || (persistent && !this.state.hash)) {
-      // We need to wait until the hash is set before we render.
+      // If the beacon is inactive then don't render it.
+      // Otherwise we need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
       return Children.toArray(this.props.children)[0];
@@ -243,6 +244,50 @@ export class Beacon extends Component {
       return this.renderBeacon(persistent);
     } else {
       return this.renderTooltip();
+    }
+  }
+
+  loadHash(persistent) {
+    const { tooltipText } = this.props;
+    const text = typeof(tooltipText) === 'string' ? tooltipText : ReactDOMServer.renderToStaticMarkup(tooltipText);
+    const hash = persistent === true ? sha1(text) : persistent;
+
+    const transaction = this.state.database.transaction(['beacons']);
+    const objectStore = transaction.objectStore('beacons');
+    objectStore.get(hash).onsuccess = (event) => {
+      if (!event.target.result) {
+        if (!this.state.hash) {
+          this.setState({ hash });
+        }
+      } else {
+        if (this.state.hash) {
+          this.setState({ hash: null });
+        }
+      }
+    };
+  }
+
+  checkHash() {
+    const persistent = this.state.persistent;
+    if (persistent) {
+      // Retrieve the state of the badge from the database
+      // If `persistent` is `true` then we use the hash of the component's children
+      // as a unique ID. `persistent` can be set to some other truthy value to override this default ID.
+      if (!this.state.database) {
+        const request = indexedDB.open('react-beacon');
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          db.createObjectStore('beacons');
+        };
+        request.onsuccess = () => {
+          if (!this.state.database) {
+            this.setState({ database: request.result });
+          }
+          this.loadHash(persistent);
+        };
+      } else {
+        this.loadHash(persistent);
+      }
     }
   }
 
