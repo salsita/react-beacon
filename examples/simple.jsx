@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Beacon from '../src/Beacon';
+import BeaconConfig from '../src/BeaconConfig';
 
 function renderBlock(id) {
   return (
@@ -27,21 +28,23 @@ class TestChild extends React.Component { // eslint-disable-line react/no-multi-
 
 class Test extends React.Component { // eslint-disable-line react/no-multi-comp
   render() {
-    return (<div>
-      <h1>Simple Beacons</h1>
-      <Beacon tooltipText="This is a tooltip">
-        <TestChild />
-      </Beacon>
-      <Beacon persistent tooltipText="This is a tooltip">
-        {renderBlock('beacon_2')}
-      </Beacon>
-      <Beacon tooltipText="This is a tooltip">
-        {renderBlock('beacon_3')}
-      </Beacon>
-      <Beacon tooltipText="This is a tooltip">
-        {renderBlock('beacon_4')}
-      </Beacon>
-    </div>);
+    return (
+      <BeaconConfig persistent>
+        <h1>Simple Beacons</h1>
+        <Beacon tooltipText="This is a tooltip">
+          <TestChild />
+        </Beacon>
+        <Beacon persistent tooltipText="This is a tooltip 2">
+          {renderBlock('beacon_2')}
+        </Beacon>
+        <Beacon tooltipText="This is a tooltip 3">
+          {renderBlock('beacon_3')}
+        </Beacon>
+        <Beacon tooltipText="This is a tooltip">
+          {renderBlock('beacon_4')}
+        </Beacon>
+      </BeaconConfig>
+    );
   }
 }
 
