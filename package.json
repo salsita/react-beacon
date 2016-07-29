@@ -60,6 +60,10 @@
     "react-dom": "^15.1.0",
     "react-onclickoutside": "^5.1.0",
     "react-tether": "^0.5.2",
+    "react-redux": "^4.4.5",
+    "redux": "^3.5.2",
+    "redux-elm": "^2.1.7",
+    "redux-saga": "^0.11.0"
     "sha1": "^1.1.1",
     "sinon": "^1.17.4",
     "style-loader": "^0.13.1",
@@ -69,5 +73,11 @@
     "webpack-dev-server": "^1.14.1",
     "webpack-merge": "^0.13.0",
     "webpack-umd-external": "^1.0.2"
+  },
+  "peerDependencies": {
+    "react-redux": "^4.4.5",
+    "redux": "^3.5.2",
+    "redux-elm": "^2.1.7",
+    "redux-saga": "^0.11.0"
   }
 }
