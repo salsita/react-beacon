@@ -1,10 +1,11 @@
 import React, { Component, Children, PropTypes } from 'react';
-import { view } from 'redux-elm';
 import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
+import { view } from 'redux-elm';
+
 import '../../../assets/style.styl';
 
 const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
