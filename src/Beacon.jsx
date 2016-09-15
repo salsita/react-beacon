@@ -48,7 +48,6 @@ export class Beacon extends Component {
       tooltipWidth: 0,
       tooltipHidden: false,
       tooltipAttachment: null,
-      arrowPosition: null,
       appRoot: null,
       appRootClassName: '',
       hashCheck: HASH_CHECK_PENDING
