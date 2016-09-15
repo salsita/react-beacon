@@ -48,6 +48,7 @@ export class Beacon extends Component {
       tooltipWidth: 0,
       tooltipHidden: false,
       tooltipAttachment: null,
+      arrowPosition: null,
       appRoot: null,
       appRootClassName: '',
       hashCheck: HASH_CHECK_PENDING
@@ -113,6 +114,10 @@ export class Beacon extends Component {
       if (this.state.tooltipAttachment !== tooltipAttachment) {
         this.setState({ tooltipAttachment });
       }
+      console.log('this update', verticalAttachment, horizontalAttachment);
+      // if ((verticalAttachment == 'top') || (verticalAttachment == 'bottom')) {
+      // this.setState({arrowPosition: {'left': '30px', 'right': 'auto'}});
+      // }
     }
   }
 
@@ -256,7 +261,8 @@ export class Beacon extends Component {
 
     const tooltipClass = tooltipActive ? 'tour-in' : (!this.state.tooltipHidden && 'tour-out') || 'inactive';
     const baseProps = {
-      attachment: this.state.tooltipAttachment,
+      // attachment: this.state.tooltipAttachment,
+      attachment: 'middle left',
       classes: { target: 'tether-target-tooltip' },
       constraints: [{ to: 'scrollParent' }],
       offset: this.getTooltipOffset()
@@ -267,6 +273,7 @@ export class Beacon extends Component {
         {this.props.children}
         <tour-tooltip class={tooltipClass} ref="tooltip">
           {this.props.tooltipText}
+          <tour-tooltip-arrow ref="tooltipArrow" />
         </tour-tooltip>
       </TetherComponent>
     );
