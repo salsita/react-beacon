@@ -293,6 +293,7 @@ export class Beacon extends Component {
         {this.props.children}
         <tour-tooltip class={tooltipClass} ref="tooltip">
           {this.props.tooltipText}
+          <tour-tooltip-arrow />
         </tour-tooltip>
       </TetherComponent>
     );
