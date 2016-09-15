@@ -11,7 +11,20 @@ const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
 const TOOLTIP_FADED_CLASS = 'tour-faded';
 const TARGET_CLONE_ID = 'tour-target-clone';
 // If margins are within tolerance then we center tooltip
-const TOOLTIP_TOLERANCE = 50;
+// Tolerance is ratio of margins to total dimension (height or width)
+// So if the difference between the tooltip margins is less than
+// `dimension/4` then we center it.
+const TOOLTIP_TOLERANCE_RATIO = 4;
+
+const TOOLTIP_STATE_VARIABLES = [
+  'tooltipActive',
+  'tooltipHeight',
+  'tooltipWidth',
+  'tooltipHidden',
+  'tooltipAttachment',
+  'appRoot',
+  'appRootClassName'
+];
 
 const HASH_CHECK_PENDING = 'PENDING';
 const HASH_CHECK_NOT_PERSISTENT = 'NOT_PERSISTENT';
@@ -48,6 +61,7 @@ export class Beacon extends Component {
       tooltipWidth: 0,
       tooltipHidden: false,
       tooltipAttachment: null,
+      inactive: false,
       appRoot: null,
       appRootClassName: '',
       hashCheck: HASH_CHECK_PENDING
@@ -83,13 +97,21 @@ export class Beacon extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.tooltip) {
-      // Always update if the tooltip is visible
+    if (Object.keys(this.props).some(key => this.props[key] !== nextProps[key])) {
+      // Always update if any prop has changed
       return true;
-    } else if (Object.keys(this.props).some(key => this.props[key] !== nextProps[key])) {
-      // Update if any prop has changed
+    } else if (this.state.tooltip !== nextState.tooltip) {
       return true;
-    } else if (this.state.inactive !== nextState.inactive || this.state.hashCheck !== this.checkHashStatus()) {
+    } else if (
+      nextState.tooltip &&
+      TOOLTIP_STATE_VARIABLES.some(key => this.state[key] !== nextState[key])
+    ) {
+      // Update if we are showing the tooltip and one of the relevant state variables has changed
+      return true;
+    } else if (
+      !nextState.tooltip &&
+      (this.state.inactive !== nextState.inactive || this.state.hashCheck !== this.checkHashStatus())
+    ) {
       // Update if inactive state or hash status have changed. Other state changes do not affect
       // the beacon view.
       return true;
@@ -107,8 +129,8 @@ export class Beacon extends Component {
 
     // If margins are similar then center tooltip
     if (this.state.targetBounds) {
-      const verticalAttachment = this.getVerticalAttachment(this.state.targetBounds);
       const horizontalAttachment = this.getHorizontalAttachment(this.state.targetBounds);
+      const verticalAttachment = this.getVerticalAttachment(this.state.targetBounds, horizontalAttachment);
       const tooltipAttachment = `${verticalAttachment} ${horizontalAttachment}`;
       if (this.state.tooltipAttachment !== tooltipAttachment) {
         this.setState({ tooltipAttachment });
@@ -137,10 +159,13 @@ export class Beacon extends Component {
     }
   }
 
-  getVerticalAttachment(bounds) {
+  getVerticalAttachment(bounds, horizontalAttachment) {
     const marginBottom = window.innerHeight - bounds.bottom;
     const marginTop = bounds.top;
-    if (marginBottom < marginTop) {
+    const tolerance = window.innerHeight / TOOLTIP_TOLERANCE_RATIO;
+    if (Math.abs(marginBottom - marginTop) < tolerance && horizontalAttachment !== 'center') {
+      return 'middle';
+    } else if (marginBottom < marginTop) {
       return 'bottom';
     } else {
       return 'top';
@@ -150,7 +175,8 @@ export class Beacon extends Component {
   getHorizontalAttachment(bounds) {
     const marginRight = window.innerWidth - bounds.right;
     const marginLeft = bounds.left;
-    if (Math.abs(marginRight - marginLeft) < TOOLTIP_TOLERANCE) {
+    const tolerance = window.innerWidth / TOOLTIP_TOLERANCE_RATIO;
+    if (Math.abs(marginRight - marginLeft) < tolerance) {
       return 'center';
     } else if (marginRight < marginLeft) {
       return 'right';

@@ -26,7 +26,7 @@ export default class BeaconConfig extends Component {
   }
 
   componentWillMount() {
-    const request = indexedDB.open('react-beacon');
+    const request = this.props.indexedDB.open('react-beacon');
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
       db.createObjectStore('beacons');
