@@ -27,7 +27,7 @@ const TOOLTIP_STATE_VARIABLES = [
   'appRootClassName'
 ];
 
-// arrow min/max offset from tooltip edge
+// Arrow min/max offset from tooltip edge
 const ARROW_POSITION_FROM_EDGE = 10;
 
 const HASH_CHECK_PENDING = 'PENDING';
