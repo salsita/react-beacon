@@ -27,8 +27,8 @@ const TOOLTIP_STATE_VARIABLES = [
   'appRootClassName'
 ];
 
-// Minimal position for arrow
-const ARROW_MIN_POSITION = 10;
+// arrow min/max offset from tooltip edge
+const ARROW_POSITION_FROM_EDGE = 10;
 
 const HASH_CHECK_PENDING = 'PENDING';
 const HASH_CHECK_NOT_PERSISTENT = 'NOT_PERSISTENT';
@@ -212,8 +212,8 @@ export class Beacon extends Component {
 
     // Calculate real distance from target center and adjust to range
     const edgeDistance = targetCenter - tooltipBounds.left;
-    const arrowMaxLeft = tooltipBounds.width - ARROW_MIN_POSITION - arrowBounds.width;
-    const arrowPos = this.clampValueToRange(edgeDistance, ARROW_MIN_POSITION, arrowMaxLeft);
+    const arrowMaxLeft = tooltipBounds.width - ARROW_POSITION_FROM_EDGE - arrowBounds.width;
+    const arrowPos = this.clampValueToRange(edgeDistance, ARROW_POSITION_FROM_EDGE, arrowMaxLeft);
 
     return arrowPos;
   }
