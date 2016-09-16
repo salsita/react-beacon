@@ -238,23 +238,25 @@ for $name, $motion in $animBank
     animation-name fadeIn- + $name
     animation-duration $animDuration
     animation-timing-function $animEasingIn
-    animation-delay 20ms // delay for calculating arrow positions
   {replace('_', '.', $name)} tour-tooltip.tour-out
     animation-name fadeOut- + $name
     animation-duration $animDuration
     animation-timing-function $animEasingOut
   @keyframes fadeIn-{$name}
-    from
+    0%, 20%
+      transform none
+      opacity 0
+    21%
       transform $motion scale($animMotionScale)
       opacity 0
-    to
+    100%
       transform none
       opacity 1
   @keyframes fadeOut-{$name}
-    from
+    0%
       transform none
       opacity 1
-    to
+    100%
       transform $motion scale($animMotionScale)
       opacity 0
 

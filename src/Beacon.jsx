@@ -27,10 +27,6 @@ const TOOLTIP_STATE_VARIABLES = [
   'appRootClassName'
 ];
 
-// Adjustments for CSS animation - $animMotionStep, $animMotionScale
-const ANIMATION_MOTION_STEP = 30;
-const ANIMATION_MOTION_SCALE = 0.8;
-
 // Minimal position for arrow
 const ARROW_MIN_POSITION = 10;
 
@@ -214,19 +210,9 @@ export class Beacon extends Component {
     const arrowBounds = this.state.arrowBounds;
     const targetCenter = targetBounds.left + (targetBounds.width / 2);
 
-    // Account for animation scaling/moving the elements before it happens
-    let tooltipLeft = tooltipBounds.left;
-    if (this.state.tooltipAttachmentHorizontal === 'left') {
-      tooltipLeft = tooltipLeft + ANIMATION_MOTION_STEP/2;
-    } else if (this.state.tooltipAttachmentHorizontal === 'right') {
-      tooltipLeft = tooltipLeft - ANIMATION_MOTION_STEP/2;
-    }
-
     // Calculate real distance from target center and adjust to range
-    const edgeDistance = targetCenter - tooltipLeft;
-    const tooltipSize = (tooltipBounds.width / (ANIMATION_MOTION_SCALE * 100)) * 100;
-    const arrowSize = (arrowBounds.width / (ANIMATION_MOTION_SCALE * 100)) * 100;
-    const arrowMaxLeft = tooltipSize - ARROW_MIN_POSITION - arrowSize;
+    const edgeDistance = targetCenter - tooltipBounds.left;
+    const arrowMaxLeft = tooltipBounds.width - ARROW_MIN_POSITION - arrowBounds.width;
     const arrowPos = this.clampValueToRange(edgeDistance, ARROW_MIN_POSITION, arrowMaxLeft);
 
     return arrowPos;
