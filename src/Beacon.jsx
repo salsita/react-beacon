@@ -21,10 +21,18 @@ const TOOLTIP_STATE_VARIABLES = [
   'tooltipHeight',
   'tooltipWidth',
   'tooltipHidden',
-  'tooltipAttachment',
+  'tooltipAttachmentVertical',
+  'tooltipAttachmentHorizontal',
   'appRoot',
   'appRootClassName'
 ];
+
+// Adjustments for CSS animation - $animMotionStep, $animMotionScale
+const ANIMATION_MOTION_STEP = 30;
+const ANIMATION_MOTION_SCALE = 0.8;
+
+// Minimal position for arrow
+const ARROW_MIN_POSITION = 10;
 
 const HASH_CHECK_PENDING = 'PENDING';
 const HASH_CHECK_NOT_PERSISTENT = 'NOT_PERSISTENT';
@@ -60,7 +68,8 @@ export class Beacon extends Component {
       tooltipHeight: 0,
       tooltipWidth: 0,
       tooltipHidden: false,
-      tooltipAttachment: null,
+      tooltipAttachmentVertical: null,
+      tooltipAttachmentHorizontal: null,
       inactive: false,
       appRoot: null,
       appRootClassName: '',
@@ -115,6 +124,9 @@ export class Beacon extends Component {
       // Update if inactive state or hash status have changed. Other state changes do not affect
       // the beacon view.
       return true;
+    } else if (this.state.tooltipBounds !== nextState.tooltipBounds && nextState.tooltipActive) {
+      // Update after getting values for arrow positioning
+      return true;
     } else {
       // In all other cases we can optimize by skipping the update
       return false;
@@ -129,11 +141,11 @@ export class Beacon extends Component {
 
     // If margins are similar then center tooltip
     if (this.state.targetBounds) {
-      const horizontalAttachment = this.getHorizontalAttachment(this.state.targetBounds);
-      const verticalAttachment = this.getVerticalAttachment(this.state.targetBounds, horizontalAttachment);
-      const tooltipAttachment = `${verticalAttachment} ${horizontalAttachment}`;
-      if (this.state.tooltipAttachment !== tooltipAttachment) {
-        this.setState({ tooltipAttachment });
+      const tooltipAttachmentHorizontal = this.getHorizontalAttachment(this.state.targetBounds);
+      const tooltipAttachmentVertical = this.getVerticalAttachment(this.state.targetBounds, tooltipAttachmentHorizontal);
+      if ((this.state.tooltipAttachmentVertical !== tooltipAttachmentVertical) ||
+         (this.state.tooltipAttachmentHorizontal !== tooltipAttachmentHorizontal)) {
+        this.setState({ tooltipAttachmentVertical, tooltipAttachmentHorizontal });
       }
     }
   }
@@ -156,6 +168,13 @@ export class Beacon extends Component {
       if (boundsChanged || (this.state.targetElement !== targetElement)) {
         this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
       }
+    }
+    if (this.state.tooltip && !this.state.tooltipBounds) {
+      // Save tooltip element bounds when tooltip is active
+      this.setState({
+        tooltipBounds: this.refs.tooltip.getBoundingClientRect(),
+        arrowBounds: this.refs.tooltipArrow.getBoundingClientRect()
+      });
     }
   }
 
@@ -185,12 +204,38 @@ export class Beacon extends Component {
     }
   }
 
+  clampValueToRange(val, min, max) {
+    return Math.min(Math.max(min, val), max);
+  }
+
+  getArrowHorizontalPosition() {
+    const targetBounds = this.state.targetBounds;
+    const tooltipBounds = this.state.tooltipBounds;
+    const arrowBounds = this.state.arrowBounds;
+    const targetCenter = targetBounds.left + (targetBounds.width / 2);
+
+    // Account for animation scaling/moving the elements before it happens
+    let tooltipLeft = tooltipBounds.left;
+    if (this.state.tooltipAttachmentHorizontal === 'left') {
+      tooltipLeft = tooltipLeft + ANIMATION_MOTION_STEP/2;
+    } else if (this.state.tooltipAttachmentHorizontal === 'right') {
+      tooltipLeft = tooltipLeft - ANIMATION_MOTION_STEP/2;
+    }
+
+    // Calculate real distance from target center and adjust to range
+    const edgeDistance = targetCenter - tooltipLeft;
+    const tooltipSize = (tooltipBounds.width / (ANIMATION_MOTION_SCALE * 100)) * 100;
+    const arrowSize = (arrowBounds.width / (ANIMATION_MOTION_SCALE * 100)) * 100;
+    const arrowMaxLeft = tooltipSize - ARROW_MIN_POSITION - arrowSize;
+    const arrowPos = this.clampValueToRange(edgeDistance, ARROW_MIN_POSITION, arrowMaxLeft);
+
+    return arrowPos;
+  }
+
   getTooltipOffset() {
-    switch (this.state.tooltipAttachment) {
-    case 'top left': return '0 28px';
-    case 'top right': return '0 -28px';
-    case 'bottom left': return '0 28px';
-    case 'bottom right': return '0 -28px';
+    switch (this.state.tooltipAttachmentHorizontal) {
+    case 'left': return '0 28px';
+    case 'right': return '0 -28px';
     default: return '0 0';
     }
   }
@@ -281,19 +326,29 @@ export class Beacon extends Component {
     }
 
     const tooltipClass = tooltipActive ? 'tour-in' : (!this.state.tooltipHidden && 'tour-out') || 'inactive';
+
     const baseProps = {
-      attachment: this.state.tooltipAttachment,
+      attachment: `${this.state.tooltipAttachmentVertical} ${this.state.tooltipAttachmentHorizontal}`,
       classes: { target: 'tether-target-tooltip' },
       constraints: [{ to: 'scrollParent' }],
       offset: this.getTooltipOffset()
     };
+
+    let arrowPos = {};
+    if (this.state.tooltipBounds && this.state.tooltipActive) {
+      // Get new arrow horizontal position relative to target center
+      arrowPos = (this.state.tooltipAttachmentVertical === 'top' || this.state.tooltipAttachmentVertical === 'bottom') ?
+        { left: this.getArrowHorizontalPosition(), right: 'auto' } :
+        { top: '50%', bottom: 'auto' };
+    }
+
     const tetherProps = tooltipActive ? { ...baseProps } : { ...baseProps, enabled: false };
-    return (this.state.tooltipAttachment &&
+    return (this.state.tooltipAttachmentVertical &&
       <TetherComponent {...tetherProps}>
         {this.props.children}
         <tour-tooltip class={tooltipClass} ref="tooltip">
           {this.props.tooltipText}
-          <tour-tooltip-arrow />
+          <tour-tooltip-arrow ref="tooltipArrow" style={arrowPos} />
         </tour-tooltip>
       </TetherComponent>
     );

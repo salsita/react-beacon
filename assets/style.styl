@@ -214,6 +214,7 @@ tour-tooltip
 // Animations
 $animDuration = 300ms
 $animMotionStep = 30px
+$animMotionScale = 0.8
 $animEasingIn = ease-out
 $animEasingOut = ease-in
 $animBank = {
@@ -237,13 +238,14 @@ for $name, $motion in $animBank
     animation-name fadeIn- + $name
     animation-duration $animDuration
     animation-timing-function $animEasingIn
+    animation-delay 20ms // delay for calculating arrow positions
   {replace('_', '.', $name)} tour-tooltip.tour-out
     animation-name fadeOut- + $name
     animation-duration $animDuration
     animation-timing-function $animEasingOut
   @keyframes fadeIn-{$name}
     from
-      transform $motion scale(.8)
+      transform $motion scale($animMotionScale)
       opacity 0
     to
       transform none
@@ -253,7 +255,7 @@ for $name, $motion in $animBank
       transform none
       opacity 1
     to
-      transform $motion scale(.8)
+      transform $motion scale($animMotionScale)
       opacity 0
 
 // Beacon
