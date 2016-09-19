@@ -165,7 +165,7 @@ export class Beacon extends Component {
       }
     }
 
-    if (this.state.tooltip && this.state.targetBounds && !this.state.arrowPosition) {
+    if (this.state.tooltip && !this.state.arrowPosition) {
       // Calculate relative arrow position when ref is available
       setTimeout(() => {
         const arrowStyleLeft = this.getArrowHorizontalPosition(
