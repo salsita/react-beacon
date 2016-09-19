@@ -218,8 +218,7 @@ export class Beacon extends Component {
     const targetCenter = targetBounds.left + (targetBounds.width / 2);
     const edgeDistance = targetCenter - tooltipBounds.left;
     const arrowMaxLeft = tooltipBounds.width - ARROW_POSITION_FROM_EDGE - arrowBounds.width;
-    const arrowPos = this.clampValueToRange(edgeDistance, ARROW_POSITION_FROM_EDGE, arrowMaxLeft);
-    return arrowPos;
+    return this.clampValueToRange(edgeDistance, ARROW_POSITION_FROM_EDGE, arrowMaxLeft);
   }
 
   getTooltipOffset() {
