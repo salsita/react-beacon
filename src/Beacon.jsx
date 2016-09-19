@@ -169,7 +169,7 @@ export class Beacon extends Component {
       // Calculate relative arrow position when ref is available
       setTimeout(() => {
         const arrowStyleLeft = this.getArrowHorizontalPosition(
-          this.state.targetBounds,
+          targetElement.getBoundingClientRect(),
           this.refs['tooltip'].getBoundingClientRect(),
           this.refs['tooltipArrow'].getBoundingClientRect()
         );
@@ -214,13 +214,11 @@ export class Beacon extends Component {
   }
 
   getArrowHorizontalPosition(targetBounds, tooltipBounds, arrowBounds) {
+    // Calculate real distance from target center and adjust to position in tooltip
     const targetCenter = targetBounds.left + (targetBounds.width / 2);
-
-    // Calculate real distance from target center and adjust to range
     const edgeDistance = targetCenter - tooltipBounds.left;
     const arrowMaxLeft = tooltipBounds.width - ARROW_POSITION_FROM_EDGE - arrowBounds.width;
     const arrowPos = this.clampValueToRange(edgeDistance, ARROW_POSITION_FROM_EDGE, arrowMaxLeft);
-
     return arrowPos;
   }
 
