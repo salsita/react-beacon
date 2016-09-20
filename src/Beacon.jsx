@@ -15,6 +15,7 @@ const TARGET_CLONE_ID = 'tour-target-clone';
 // So if the difference between the tooltip margins is less than
 // `dimension/4` then we center it.
 const TOOLTIP_TOLERANCE_RATIO = 4;
+const TOOLTIP_HORIZONTAL_TOLERANCE = 30;
 
 const TOOLTIP_STATE_VARIABLES = [
   'tooltipActive',
@@ -163,23 +164,21 @@ export class Beacon extends Component {
       if (boundsChanged || (this.state.targetElement !== targetElement)) {
         this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-update-set-state
       }
-    }
 
-    if (this.state.tooltip && !this.state.arrowPosition) {
-      // Calculate relative arrow position when ref is available
-      setTimeout(() => {
+      if (this.state.tooltip && !this.state.arrowPosition) {
+        // Calculate relative arrow position when ref is available
         const arrowStyleLeft = this.getArrowHorizontalPosition(
           targetElement.getBoundingClientRect(),
-          this.refs['tooltip'].getBoundingClientRect(),
-          this.refs['tooltipArrow'].getBoundingClientRect()
+          this.refs.tooltip.getBoundingClientRect(),
+          this.refs.tooltipArrow.getBoundingClientRect()
         );
-        this.setState({
+        this.setState({ // eslint-disable-line react/no-did-update-set-state
           arrowPosition: (this.state.tooltipAttachmentVertical === 'top' ||
             this.state.tooltipAttachmentVertical === 'bottom') ?
             { left: arrowStyleLeft, right: 'auto' } :
             { top: '50%', bottom: 'auto' }
         });
-      }, 0);
+      }
     }
   }
 
@@ -199,18 +198,14 @@ export class Beacon extends Component {
   getHorizontalAttachment(bounds) {
     const marginRight = window.innerWidth - bounds.right;
     const marginLeft = bounds.left;
-    const tolerance = window.innerWidth / TOOLTIP_TOLERANCE_RATIO;
-    if (Math.abs(marginRight - marginLeft) < tolerance) {
-      return 'center';
-    } else if (marginRight < marginLeft) {
+    // const tolerance = window.innerWidth / TOOLTIP_TOLERANCE_RATIO;
+    if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
+      return 'left';
+    } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
       return 'right';
     } else {
-      return 'left';
+      return 'center';
     }
-  }
-
-  clampValueToRange(val, min, max) {
-    return Math.min(Math.max(min, val), max);
   }
 
   getArrowHorizontalPosition(targetBounds, tooltipBounds, arrowBounds) {
@@ -222,6 +217,9 @@ export class Beacon extends Component {
   }
 
   getTooltipOffset() {
+    if (this.state.tooltipAttachmentVertical === 'middle') {
+      return '0 0';
+    }
     switch (this.state.tooltipAttachmentHorizontal) {
     case 'left': return '0 28px';
     case 'right': return '0 -28px';
@@ -292,7 +290,7 @@ export class Beacon extends Component {
 
     if (appRoot) {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
-      if (!tooltipActive && oldClone) {
+      if (!tooltipActive && oldClone && oldClone.className != 'tour-clone') {
         oldClone.className = 'tour-clone';
         oldClone.addEventListener('transitionend', () => {
           oldClone.parentNode.removeChild(oldClone);
@@ -319,7 +317,7 @@ export class Beacon extends Component {
     const baseProps = {
       attachment: `${this.state.tooltipAttachmentVertical} ${this.state.tooltipAttachmentHorizontal}`,
       classes: { target: 'tether-target-tooltip' },
-      constraints: [{ to: 'scrollParent' }],
+      constraints: [{ to: 'scrollParent', pin: true }],
       offset: this.getTooltipOffset()
     };
 
@@ -341,6 +339,10 @@ export class Beacon extends Component {
     } else {
       return this.renderTooltip();
     }
+  }
+
+  clampValueToRange(val, min, max) {
+    return Math.min(Math.max(min, val), max);
   }
 
   loadHash(persistent) {

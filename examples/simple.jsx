@@ -29,12 +29,12 @@ class TestChild extends React.Component { // eslint-disable-line react/no-multi-
 class Test extends React.Component { // eslint-disable-line react/no-multi-comp
   render() {
     return (
-      <BeaconConfig persistent>
+      <BeaconConfig>
         <h1>Simple Beacons</h1>
         <Beacon tooltipText="This is a tooltip">
           <TestChild />
         </Beacon>
-        <Beacon persistent tooltipText="This is a tooltip 2">
+        <Beacon tooltipText="This is a tooltip 2">
           {renderBlock('beacon_2')}
         </Beacon>
         <Beacon tooltipText="This is a tooltip 3">
