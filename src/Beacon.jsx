@@ -198,7 +198,6 @@ export class Beacon extends Component {
   getHorizontalAttachment(bounds) {
     const marginRight = window.innerWidth - bounds.right;
     const marginLeft = bounds.left;
-    // const tolerance = window.innerWidth / TOOLTIP_TOLERANCE_RATIO;
     if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
       return 'left';
     } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
