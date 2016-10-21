@@ -279,7 +279,7 @@ export class Beacon extends Component {
     return (
       <TetherComponent attachment="middle center" constraints={[{ to: 'window' }]}>
         {this.props.children}
-        <tour-beacon ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
+        <tour-beacon data-hash={this.getHash()} ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
   }
