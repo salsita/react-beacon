@@ -74,6 +74,9 @@ export class Beacon extends Component {
       appRootClassName: '',
       hashCheck: HASH_CHECK_PENDING
     };
+
+    this.showTooltip = ::this.showTooltip;
+    this.handleDontShow = ::this.handleDontShow;
   }
 
   componentWillMount() {
@@ -97,8 +100,8 @@ export class Beacon extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const inactive = (nextProps.active === false) || (this.context.beacon && (this.context.beacon.active === false));
+  componentWillReceiveProps(nextProps, nextContext) {
+    const inactive = (nextProps.active === false) || (nextContext.beacon && (nextContext.beacon.active === false));
     if (inactive !== this.state.inactive) {
       this.setState({ inactive });
     }
@@ -279,7 +282,7 @@ export class Beacon extends Component {
     return (
       <TetherComponent attachment="middle center" constraints={[{ to: 'window' }]}>
         {this.props.children}
-        <tour-beacon data-hash={this.getHash()} ref="beacon" onClick={::this.showTooltip}><span /></tour-beacon>
+        <tour-beacon data-hash={this.getHash()} ref="beacon" onClick={this.showTooltip}><span /></tour-beacon>
       </TetherComponent>
     );
   }
@@ -289,7 +292,7 @@ export class Beacon extends Component {
 
     if (appRoot) {
       const oldClone = document.getElementById(TARGET_CLONE_ID);
-      if (!tooltipActive && oldClone && oldClone.className != 'tour-clone') {
+      if (!tooltipActive && oldClone && oldClone.className !== 'tour-clone') {
         oldClone.className = 'tour-clone';
         oldClone.addEventListener('transitionend', () => {
           oldClone.parentNode.removeChild(oldClone);
@@ -326,6 +329,7 @@ export class Beacon extends Component {
         {this.props.children}
         <tour-tooltip class={tooltipClass} ref="tooltip">
           {this.props.tooltipText}
+          {this.context.beacon && <tour-settings onClick={this.handleDontShow}>Don't show hints</tour-settings>}
           <tour-tooltip-arrow ref="tooltipArrow" style={this.state.arrowPosition} />
         </tour-tooltip>
       </TetherComponent>
@@ -385,6 +389,11 @@ export class Beacon extends Component {
     if (this.state.persistent) {
       this.context.beacon.storeHash(this.getHash());
     }
+  }
+
+  handleDontShow(event) {
+    event.preventDefault();
+    this.context.beacon.handleDontShow();
   }
 }
 

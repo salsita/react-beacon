@@ -1,5 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 
+const INACTIVE_PROP = 'inactive';
+
 export default class BeaconConfig extends Component {
   static propTypes = {
     persistent: PropTypes.bool,
@@ -21,7 +23,8 @@ export default class BeaconConfig extends Component {
 
     this.state = {
       dbCache: {},
-      requestQueue: []
+      requestQueue: [],
+      active: false
     };
   }
 
@@ -32,7 +35,16 @@ export default class BeaconConfig extends Component {
       db.createObjectStore('beacons');
     };
     request.onsuccess = () => {
-      this.setState({ database: request.result });
+      const database = request.result;
+      this.setState({ database });
+
+      // Load active state from database
+      const transaction = database.transaction(['beacons']);
+      const objectStore = transaction.objectStore('beacons');
+      objectStore.get(INACTIVE_PROP).onsuccess = (event) => {
+        this.setState({ active: !event.target.result });
+      };
+
       // Flush pending requests from queue
       this.state.requestQueue.forEach(req => this.loadHash(req.hash, req.callback));
     };
@@ -43,9 +55,11 @@ export default class BeaconConfig extends Component {
     return {
       beacon: {
         persistent,
+        active: this.state.active,
         storeHash: hash => this.storeHash(hash),
         loadHash: (hash, callback) => this.loadHash(hash, callback),
-        checkHash: hash => this.checkHash(hash)
+        checkHash: hash => this.checkHash(hash),
+        handleDontShow: () => this.handleDontShow()
       }
     };
   }
@@ -85,5 +99,11 @@ export default class BeaconConfig extends Component {
 
   checkHash(hash) {
     return (hash in this.state.dbCache) && this.state.dbCache[hash];
+  }
+
+  handleDontShow() {
+    const transaction = this.state.database.transaction(['beacons'], 'readwrite');
+    transaction.objectStore('beacons').add(true, INACTIVE_PROP);
+    this.setState({ active: false });
   }
 }
