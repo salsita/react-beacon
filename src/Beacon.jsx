@@ -282,7 +282,7 @@ export class Beacon extends Component {
 
   renderBeacon() {
     const { hashCheck } = this.state;
-    const inactive = this.state.inactive || (this.context.beacon && (this.context.beacon.active === false));
+    const inactive = this.state.inactive || (this.context.beacon && (this.context.beacon.getActive() === false));
     if (inactive || (hashCheck === HASH_CHECK_PENDING) || (hashCheck === HASH_CHECK_FOUND)) {
       // If the beacon is inactive then don't render it.
       // Otherwise we need to wait until the hash is set before we render.

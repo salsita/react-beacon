@@ -57,7 +57,7 @@ export default class BeaconConfig extends Component {
     return {
       beacon: {
         persistent,
-        active: this.state.active,
+        getActive: () => this.state.active,
         registerBeacon: beacon => this.registerBeacon(beacon),
         unregisterBeacon: beacon => this.unregisterBeacon(beacon),
         storeHash: hash => this.storeHash(hash),
