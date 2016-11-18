@@ -98,10 +98,14 @@ export class Beacon extends Component {
     if (this.state.targetElement !== targetElement) {
       this.setState({ targetElement, targetBounds }); // eslint-disable-line react/no-did-mount-set-state
     }
+
+    if (this.context.beacon) {
+      this.context.beacon.registerBeacon(this);
+    }
   }
 
-  componentWillReceiveProps(nextProps, nextContext) {
-    const inactive = (nextProps.active === false) || (nextContext.beacon && (nextContext.beacon.active === false));
+  componentWillReceiveProps(nextProps) {
+    const inactive = nextProps.active === false;
     if (inactive !== this.state.inactive) {
       this.setState({ inactive });
     }
@@ -182,6 +186,12 @@ export class Beacon extends Component {
             { top: '50%', bottom: 'auto' }
         });
       }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.context.beacon) {
+      this.context.beacon.unregisterBeacon(this);
     }
   }
 
@@ -271,7 +281,8 @@ export class Beacon extends Component {
   }
 
   renderBeacon() {
-    const { inactive, hashCheck } = this.state;
+    const { hashCheck } = this.state;
+    const inactive = this.state.inactive || (this.context.beacon && (this.context.beacon.active === false));
     if (inactive || (hashCheck === HASH_CHECK_PENDING) || (hashCheck === HASH_CHECK_FOUND)) {
       // If the beacon is inactive then don't render it.
       // Otherwise we need to wait until the hash is set before we render.
@@ -377,7 +388,7 @@ export class Beacon extends Component {
   }
 
   handleClickOutside(event) {
-    if (this.state.tooltip && this.state.tooltipActive) {
+    if (this.state.tooltip && this.state.tooltipActive && !this.refs.tooltip.contains(event.target)) {
       event.preventDefault();
       this.setState({ tooltipActive: false });
     }
@@ -394,6 +405,7 @@ export class Beacon extends Component {
   handleDontShow(event) {
     event.preventDefault();
     this.context.beacon.handleDontShow();
+    this.setState({ tooltipActive: false });
   }
 }
 

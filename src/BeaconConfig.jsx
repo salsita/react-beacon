@@ -26,6 +26,8 @@ export default class BeaconConfig extends Component {
       requestQueue: [],
       active: false
     };
+
+    this.beacons = [];
   }
 
   componentWillMount() {
@@ -42,7 +44,7 @@ export default class BeaconConfig extends Component {
       const transaction = database.transaction(['beacons']);
       const objectStore = transaction.objectStore('beacons');
       objectStore.get(INACTIVE_PROP).onsuccess = (event) => {
-        this.setState({ active: !event.target.result });
+        this.setActiveState(!event.target.result);
       };
 
       // Flush pending requests from queue
@@ -56,6 +58,8 @@ export default class BeaconConfig extends Component {
       beacon: {
         persistent,
         active: this.state.active,
+        registerBeacon: beacon => this.registerBeacon(beacon),
+        unregisterBeacon: beacon => this.unregisterBeacon(beacon),
         storeHash: hash => this.storeHash(hash),
         loadHash: (hash, callback) => this.loadHash(hash, callback),
         checkHash: hash => this.checkHash(hash),
@@ -70,6 +74,26 @@ export default class BeaconConfig extends Component {
         {this.props.children}
       </div>
     );
+  }
+
+  setActiveState(active) {
+    this.setState({ active });
+
+    // Need to update all beacons manually since context changes don't trigger re-render
+    this.beacons.forEach(beacon => beacon.forceUpdate());
+  }
+
+  registerBeacon(beacon) {
+    if (this.beacons.indexOf(beacon) === -1) {
+      this.beacons.push(beacon);
+    }
+  }
+
+  unregisterBeacon(beacon) {
+    const index = this.beacons.indexOf(beacon);
+    if (index !== -1) {
+      this.beacons.splice(index, 1);
+    }
   }
 
   storeHash(hash) {
@@ -104,6 +128,6 @@ export default class BeaconConfig extends Component {
   handleDontShow() {
     const transaction = this.state.database.transaction(['beacons'], 'readwrite');
     transaction.objectStore('beacons').add(true, INACTIVE_PROP);
-    this.setState({ active: false });
+    this.setActiveState(false);
   }
 }
