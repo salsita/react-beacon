@@ -388,6 +388,9 @@ export class Beacon extends Component {
   }
 
   handleClickOutside(event) {
+    // Note that this function is triggered even for clicks inside the tooltip (since it is handled
+    // by Tether.io and thus outside of the `Beacon` component's DOM), so we have to check manually
+    // whether the user clicked inside the tooltip
     if (this.state.tooltip && this.state.tooltipActive && !this.refs.tooltip.contains(event.target)) {
       event.preventDefault();
       this.setState({ tooltipActive: false });

@@ -90,10 +90,7 @@ export default class BeaconConfig extends Component {
   }
 
   unregisterBeacon(beacon) {
-    const index = this.beacons.indexOf(beacon);
-    if (index !== -1) {
-      this.beacons.splice(index, 1);
-    }
+    this.beacons = this.beacons.filter(item => item !== beacon);
   }
 
   storeHash(hash) {
