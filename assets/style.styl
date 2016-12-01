@@ -80,11 +80,13 @@ tour-tooltip
 
     // Left
     .tether-target-attached-left &
+    .tether-pinned-left &
       left 100%
       top 50%
       transform translateY(-50%)
 
     .tether-target-attached-left &:before
+    .tether-pinned-left &:before
       left 0
       top 2px
       border-top $tourArrowSize solid transparent
@@ -94,6 +96,7 @@ tour-tooltip
       z-index 1
 
     .tether-target-attached-left &:after
+    .tether-pinned-left &:after
       left 0
       top 0
       border-top $tourArrowShadeSize solid transparent
