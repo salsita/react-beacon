@@ -80,11 +80,13 @@ tour-tooltip
 
     // Left
     .tether-target-attached-left &
+    .tether-pinned-left &
       left 100%
       top 50%
       transform translateY(-50%)
 
     .tether-target-attached-left &:before
+    .tether-pinned-left &:before
       left 0
       top 2px
       border-top $tourArrowSize solid transparent
@@ -94,6 +96,7 @@ tour-tooltip
       z-index 1
 
     .tether-target-attached-left &:after
+    .tether-pinned-left &:after
       left 0
       top 0
       border-top $tourArrowShadeSize solid transparent
@@ -103,11 +106,13 @@ tour-tooltip
 
     // Right
     .tether-target-attached-right &
+    .tether-pinned-right &
       right 100%
       top 50%
       transform translateY(-50%)
 
     .tether-target-attached-right &:before
+    .tether-pinned-right &:before
       right 0
       top 2px
       border-top $tourArrowSize solid transparent
@@ -117,6 +122,7 @@ tour-tooltip
       z-index 1
 
     .tether-target-attached-right &:after
+    .tether-pinned-right &:after
       right 0
       top 0
       border-top $tourArrowShadeSize solid transparent
@@ -126,11 +132,13 @@ tour-tooltip
 
     // Top
     .tether-target-attached-top &
+    .tether-pinned-top &
       top 100%
       left 50%
       transform translateX(-50%)
 
     .tether-target-attached-top &:before
+    .tether-pinned-top &:before
       top 0
       left 2px
       border-left $tourArrowSize solid transparent
@@ -140,6 +148,7 @@ tour-tooltip
       z-index 1
 
     .tether-target-attached-top &:after
+    .tether-pinned-top &:after
       top 0
       left 0
       border-left $tourArrowShadeSize solid transparent
@@ -149,11 +158,13 @@ tour-tooltip
 
     // Bottom
     .tether-target-attached-bottom &
+    .tether-pinned-bottom &
       bottom 100%
       left 50%
       transform translateX(-50%)
 
     .tether-target-attached-bottom &:before
+    .tether-pinned-bottom &:before
       left 2px
       bottom 0
       top auto
@@ -164,6 +175,7 @@ tour-tooltip
       z-index 1
 
     .tether-target-attached-bottom &:after
+    .tether-pinned-bottom &:after
       left 0
       bottom 0
       top auto
@@ -175,20 +187,38 @@ tour-tooltip
     // Diagonals
     // Top/Bottom Left
     .tether-target-attached-top.tether-target-attached-left &
+    .tether-target-attached-top.tether-pinned-left &
+    .tether-pinned-top.tether-target-attached-left &
+    .tether-pinned-top.tether-pinned-left &
     .tether-target-attached-bottom.tether-target-attached-left &
+    .tether-target-attached-bottom.tether-pinned-left &
+    .tether-pinned-bottom.tether-target-attached-left &
+    .tether-pinned-bottom.tether-pinned-left &
       left auto
       right 10px
       transform none
 
     // Top/Bottom Right
     .tether-target-attached-top.tether-target-attached-right &
+    .tether-target-attached-top.tether-pinned-right &
+    .tether-pinned-top.tether-target-attached-right &
+    .tether-pinned-top.tether-pinned-right &
     .tether-target-attached-bottom.tether-target-attached-right &
+    .tether-target-attached-bottom.tether-pinned-right &
+    .tether-pinned-bottom.tether-target-attached-right &
+    .tether-pinned-bottom.tether-pinned-right &
       left 10px
       transform none
 
     // Bottom offset
     .tether-target-attached-bottom.tether-target-attached-left &
+    .tether-target-attached-bottom.tether-pinned-left &
+    .tether-pinned-bottom.tether-target-attached-left &
+    .tether-pinned-bottom.tether-pinned-left &
     .tether-target-attached-bottom.tether-target-attached-right &
+    .tether-target-attached-bottom.tether-pinned-right &
+    .tether-pinned-bottom.tether-target-attached-right &
+    .tether-pinned-bottom.tether-pinned-right &
       top auto
 
 .tour-highlighted
@@ -230,17 +260,45 @@ $animEasingIn = ease-out
 $animEasingOut = ease-in
 $animBank = {
   '_tether-target-attached-bottom': translateY(-($animMotionStep)),
+  '_tether-pinned-bottom': translateY(-($animMotionStep)),
   '_tether-target-attached-bottom_tether-target-attached-left': translate($animMotionStep, -($animMotionStep)),
+  '_tether-pinned-bottom_tether-target-attached-left': translate($animMotionStep, -($animMotionStep)),
+  '_tether-target-attached-bottom_tether-pinned-left': translate($animMotionStep, -($animMotionStep)),
+  '_tether-pinned-bottom_tether-pinned-left': translate($animMotionStep, -($animMotionStep)),
   '_tether-target-attached-bottom_tether-target-attached-right': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-pinned-bottom_tether-target-attached-right': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-target-attached-bottom_tether-pinned-right': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-pinned-bottom_tether-pinned-right': translate(-($animMotionStep), -($animMotionStep)),
   '_tether-target-attached-left': translateX($animMotionStep),
+  '_tether-pinned-left': translateX($animMotionStep),
   '_tether-target-attached-left_tether-target-attached-top': translate($animMotionStep, $animMotionStep),
+  '_tether-pinned-left_tether-target-attached-top': translate($animMotionStep, $animMotionStep),
+  '_tether-target-attached-left_tether-pinned-top': translate($animMotionStep, $animMotionStep),
+  '_tether-pinned-left_tether-pinned-top': translate($animMotionStep, $animMotionStep),
   '_tether-target-attached-left_tether-target-attached-bottom': translate($animMotionStep, -($animMotionStep)),
+  '_tether-pinned-left_tether-target-attached-bottom': translate($animMotionStep, -($animMotionStep)),
+  '_tether-target-attached-left_tether-pinned-bottom': translate($animMotionStep, -($animMotionStep)),
+  '_tether-pinned-left_tether-pinned-bottom': translate($animMotionStep, -($animMotionStep)),
   '_tether-target-attached-top': translateY($animMotionStep),
+  '_tether-pinned-top': translateY($animMotionStep),
   '_tether-target-attached-top_tether-target-attached-left': translate($animMotionStep, $animMotionStep),
+  '_tether-pinned-top_tether-target-attached-left': translate($animMotionStep, $animMotionStep),
+  '_tether-target-attached-top_tether-pinned-left': translate($animMotionStep, $animMotionStep),
+  '_tether-pinned-top_tether-pinned-left': translate($animMotionStep, $animMotionStep),
   '_tether-target-attached-top_tether-target-attached-right': translate(-($animMotionStep), $animMotionStep),
+  '_tether-pinned-top_tether-target-attached-right': translate(-($animMotionStep), $animMotionStep),
+  '_tether-target-attached-top_tether-pinned-right': translate(-($animMotionStep), $animMotionStep),
+  '_tether-pinned-top_tether-pinned-right': translate(-($animMotionStep), $animMotionStep),
   '_tether-target-attached-right': translateX(-($animMotionStep)),
+  '_tether-pinned-right': translateX(-($animMotionStep)),
   '_tether-target-attached-right_tether-target-attached-top': translate(-($animMotionStep), $animMotionStep),
-  '_tether-target-attached-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep))
+  '_tether-pinned-right_tether-target-attached-top': translate(-($animMotionStep), $animMotionStep),
+  '_tether-target-attached-right_tether-pinned-top': translate(-($animMotionStep), $animMotionStep),
+  '_tether-pinned-right_tether-pinned-top': translate(-($animMotionStep), $animMotionStep),
+  '_tether-target-attached-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-pinned-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-target-attached-right_tether-pinned-bottom': translate(-($animMotionStep), -($animMotionStep)),
+  '_tether-pinned-right_tether-pinned-bottom': translate(-($animMotionStep), -($animMotionStep))
 }
 
 // Generator
