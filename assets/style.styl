@@ -8,6 +8,8 @@ inline-beacon
   position relative
 
   // Inline tooltip positioning
+  &.tether-target-attached-middle tour-tooltip
+    top 50% // transform centering is done inside keyframe animations
   &.tether-target-attached-top tour-tooltip
     bottom "calc(100% + %s)" % $tooltipOffset
   &.tether-target-attached-right tour-tooltip
@@ -309,7 +311,7 @@ $animBank = {
   '_tether-target-attached-right': translateX(-($animMotionStep)),
   '_tether-pinned-right': translateX(-($animMotionStep)),
   '_tether-target-attached-left': translateX($animMotionStep),
-  '_tether-pinned-left': translateX($animMotionStep),
+  '_tether-pinned-left': translateX($animMotionStep)
 }
 
 // Generator

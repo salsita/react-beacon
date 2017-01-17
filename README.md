@@ -20,6 +20,7 @@ http://localhost:8080/
 `<Beacon tooltipText="Hey!" inline />`
 
 * `tooltipText`: content for the tooltip
+* `align`: preference for tooltip alignment, accepts an array of horizontal/vertical options, ex: `['left', 'top']` in that order. If not set, the alignment is selected automatically based on viewport bounds
 * `inline`: by default [Tether](http://tether.io/) library is used to handle positioning, which may perform poorly in some cases. This option allows you to position the Beacons inline inside their immediate parent instead. See below for details
 
 ## Usage
@@ -31,7 +32,7 @@ Just place the `Beacon` tag around the target element with the tooltip text as i
   <Beacon tooltipText="And you did!">
     <h1>Highlight me!</h1>
   </Beacon>
-<BeaconConfig persistent>
+</BeaconConfig>
 ```
 
 ## Persistence
@@ -54,11 +55,11 @@ If Beacons are set to inline positioning, both the beaconed elements and the bea
 ```JSX
 <inline-beacon>
   {this.props.children}
-  {<tour-beacon/> || <tour-tooltip/>}
+  {tooltipActive ? <tour-beacon/> : <tour-tooltip/>}
 </inline-beacon>
 ```
 
-The pulsating beacon is always centered relative to this parent while the triggered tooltip position is calculated automatically based on viewport bounds. In an ideal case, the `inline-beacon` should be the same size as the target element, barely wrapping it
+The pulsating beacon is always centered relative to this parent and while the triggered tooltip position accepts alignment options, it may be needed to adjust the tooltip CSS position manually to your usecase as there is no offscreen detection that is otherwise provided by Tether. In an ideal case, the `inline-beacon` should be the same size as the target element, barely wrapping it.
 
 ## Tooltip Overlay effect
 

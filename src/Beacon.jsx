@@ -51,12 +51,14 @@ export class Beacon extends Component {
     id: PropTypes.string,
     active: PropTypes.bool,
     inline: PropTypes.bool,
+    align: PropTypes.arrayOf(PropTypes.string),
     tooltipText: PropTypes.node.isRequired,
     children: React.PropTypes.element.isRequired
   }
 
   static contextTypes = {
-    beacon: PropTypes.object
+    beacon: PropTypes.object,
+    align: null
   }
 
   static defaultProps = {
@@ -202,27 +204,49 @@ export class Beacon extends Component {
   }
 
   getVerticalAttachment(bounds, horizontalAttachment) {
-    const marginBottom = window.innerHeight - bounds.bottom;
-    const marginTop = bounds.top;
-    const tolerance = window.innerHeight / TOOLTIP_TOLERANCE_RATIO;
-    if (Math.abs(marginBottom - marginTop) < tolerance && horizontalAttachment !== 'center') {
-      return 'middle';
-    } else if (marginBottom < marginTop) {
-      return 'bottom';
+    // Flip the custom values used by Tether to more convenient user input
+    if (!this.props.inline && this.props.align) {
+      const flipSides = {
+        top: 'bottom',
+        bottom: 'top'
+      };
+      return flipSides[this.props.align[1]] || this.props.align[1];
+    } else if (this.props.align) {
+      return this.props.align[1];
     } else {
-      return 'top';
+      const marginBottom = window.innerHeight - bounds.bottom;
+      const marginTop = bounds.top;
+      const tolerance = window.innerHeight / TOOLTIP_TOLERANCE_RATIO;
+      if (Math.abs(marginBottom - marginTop) < tolerance && horizontalAttachment !== 'center') {
+        return 'middle';
+      } else if (marginBottom < marginTop) {
+        return 'bottom';
+      } else {
+        return 'top';
+      }
     }
   }
 
   getHorizontalAttachment(bounds) {
-    const marginRight = window.innerWidth - bounds.right;
-    const marginLeft = bounds.left;
-    if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
-      return 'left';
-    } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
-      return 'right';
+    // Flip the custom values used by Tether to more convenient user input
+    if (!this.props.inline && this.props.align) {
+      const flipSides = {
+        left: 'right',
+        right: 'left'
+      };
+      return flipSides[this.props.align[0]] || this.props.align[0];
+    } else if (this.props.align) {
+      return this.props.align[0];
     } else {
-      return 'center';
+      const marginRight = window.innerWidth - bounds.right;
+      const marginLeft = bounds.left;
+      if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
+        return 'left';
+      } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
+        return 'right';
+      } else {
+        return 'center';
+      }
     }
   }
 
