@@ -1,10 +1,28 @@
 $tourArrowSize = 6px
 $tourArrowShadeSize = $tourArrowSize + 2px
+$beaconHitbox = 40px
+$tooltipOffset = -50px
+
+inline-beacon
+  display inline-block
+  position relative
+
+  // Inline tooltip positioning
+  &.tether-target-attached-middle tour-tooltip
+    top 50%
+  &.tether-target-attached-top tour-tooltip
+    bottom "calc(100% + %s)" % $tooltipOffset
+  &.tether-target-attached-right tour-tooltip
+    left "calc(100% + %s)" % $tooltipOffset
+  &.tether-target-attached-bottom tour-tooltip
+    top "calc(100% + %s)" % $tooltipOffset
+  &.tether-target-attached-left tour-tooltip
+    right "calc(100% + %s)" % $tooltipOffset
 
 tour-beacon
   display block
-  height 40px
-  width 40px
+  height $beaconHitbox
+  width $beaconHitbox
   cursor pointer
 
   span
@@ -23,6 +41,12 @@ tour-beacon
     animation-duration 1.5s
     animation-iteration-count infinite
     animation-timing-function ease-out
+
+  inline-beacon &
+    position absolute
+    left 50%
+    top 50%
+    margin ($beaconHitbox/-2) 0 0 ($beaconHitbox/-2)
 
 tour-backdrop
   z-index 998
@@ -52,6 +76,9 @@ tour-tooltip
   // Hidden
   &.inactive
     display: none
+
+  inline-beacon &
+    position absolute
 
   tour-settings
     display block
@@ -222,10 +249,12 @@ tour-tooltip
       top auto
 
 .tour-highlighted
+.tour-highlighted-inline > *:not(tour-tooltip)
   transform-origin 50% !important
   transform scale(1.25) !important
 
 .tour-clone
+inline-beacon > *:not(tour-tooltip)
   transition transform 300ms ease-in !important
 
 .tour-overlay
@@ -269,16 +298,6 @@ $animBank = {
   '_tether-pinned-bottom_tether-target-attached-right': translate(-($animMotionStep), -($animMotionStep)),
   '_tether-target-attached-bottom_tether-pinned-right': translate(-($animMotionStep), -($animMotionStep)),
   '_tether-pinned-bottom_tether-pinned-right': translate(-($animMotionStep), -($animMotionStep)),
-  '_tether-target-attached-left': translateX($animMotionStep),
-  '_tether-pinned-left': translateX($animMotionStep),
-  '_tether-target-attached-left_tether-target-attached-top': translate($animMotionStep, $animMotionStep),
-  '_tether-pinned-left_tether-target-attached-top': translate($animMotionStep, $animMotionStep),
-  '_tether-target-attached-left_tether-pinned-top': translate($animMotionStep, $animMotionStep),
-  '_tether-pinned-left_tether-pinned-top': translate($animMotionStep, $animMotionStep),
-  '_tether-target-attached-left_tether-target-attached-bottom': translate($animMotionStep, -($animMotionStep)),
-  '_tether-pinned-left_tether-target-attached-bottom': translate($animMotionStep, -($animMotionStep)),
-  '_tether-target-attached-left_tether-pinned-bottom': translate($animMotionStep, -($animMotionStep)),
-  '_tether-pinned-left_tether-pinned-bottom': translate($animMotionStep, -($animMotionStep)),
   '_tether-target-attached-top': translateY($animMotionStep),
   '_tether-pinned-top': translateY($animMotionStep),
   '_tether-target-attached-top_tether-target-attached-left': translate($animMotionStep, $animMotionStep),
@@ -291,14 +310,8 @@ $animBank = {
   '_tether-pinned-top_tether-pinned-right': translate(-($animMotionStep), $animMotionStep),
   '_tether-target-attached-right': translateX(-($animMotionStep)),
   '_tether-pinned-right': translateX(-($animMotionStep)),
-  '_tether-target-attached-right_tether-target-attached-top': translate(-($animMotionStep), $animMotionStep),
-  '_tether-pinned-right_tether-target-attached-top': translate(-($animMotionStep), $animMotionStep),
-  '_tether-target-attached-right_tether-pinned-top': translate(-($animMotionStep), $animMotionStep),
-  '_tether-pinned-right_tether-pinned-top': translate(-($animMotionStep), $animMotionStep),
-  '_tether-target-attached-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep)),
-  '_tether-pinned-right_tether-target-attached-bottom': translate(-($animMotionStep), -($animMotionStep)),
-  '_tether-target-attached-right_tether-pinned-bottom': translate(-($animMotionStep), -($animMotionStep)),
-  '_tether-pinned-right_tether-pinned-bottom': translate(-($animMotionStep), -($animMotionStep))
+  '_tether-target-attached-left': translateX($animMotionStep),
+  '_tether-pinned-left': translateX($animMotionStep)
 }
 
 // Generator
@@ -329,7 +342,7 @@ for $name, $motion in $animBank
       transform $motion scale($animMotionScale)
       opacity 0
 
-// Beacon
+// Beacon pulse animation
 @keyframes pulse
   0%
     transform scale(.3)
@@ -342,7 +355,6 @@ for $name, $motion in $animBank
     opacity 0
 
 // Tether
-
 .tether-element
   position fixed !important // absolute creates a scrollable body overflow bug in Android
   z-index 999

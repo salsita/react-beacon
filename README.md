@@ -13,19 +13,26 @@ http://localhost:8080/
 
 ### Props
 
-* `position`: top, right, bottom or left for tooltip to appear. Default to right
+`<BeaconConfig persistent />`
+
 * `persistent`: see below
+
+`<Beacon tooltipText="Hey!" inline />`
+
+* `tooltipText`: content for the tooltip
+* `align`: preference for tooltip alignment, accepts an array of horizontal/vertical options, ex: `['left', 'top']` in that order. If not set, the alignment is selected automatically based on viewport bounds
+* `inline`: by default [Tether](http://tether.io/) library is used to handle positioning, which may perform poorly in some cases. This option allows you to position the Beacons inline inside their immediate parent instead. See below for details
 
 ## Usage
 
-Just place the `Beacon` tag inside the target element with the tooltip text as its content:
+Just place the `Beacon` tag around the target element with the tooltip text as its attribute:
 
-```
-<div id="some-element-that-I-want-to-explain-to-the-user">
-  <Beacon>
-    This is the tooltip text
+```JSX
+<BeaconConfig persistent>
+  <Beacon tooltipText="And you did!">
+    <h1>Highlight me!</h1>
   </Beacon>
-</div>
+</BeaconConfig>
 ```
 
 ## Persistence
@@ -42,11 +49,23 @@ the `persistent` attribute.
 IndexedDB is used for storing the beacon state, so if some of your target browsers don't support IndexedDB,
 you should use a [shim](https://github.com/axemclion/IndexedDBShim).
 
-## Tooltip Overlay
+## Inline positioning
+If Beacons are set to inline positioning, both the beaconed elements and the beacon visual itself are placed in `inline-beacon` parent element that you may have to restyle for your layout. The resulting HTML structure of the component looks as follows where both the beacon and the tooltip become a sibling to your wrapped content and are positioned absolutely inside this parent
 
-If desired, the tooltip target can be highlighted by fading the background and enlarging the target when
+```JSX
+<inline-beacon>
+  {this.props.children}
+  {tooltipActive ? <tour-beacon/> : <tour-tooltip/>}
+</inline-beacon>
+```
+
+The pulsating beacon is always centered relative to this parent and while the triggered tooltip position accepts alignment options, it may be needed to adjust the tooltip CSS position manually to your usecase as there is no offscreen detection that is otherwise provided by Tether. In an ideal case, the `inline-beacon` should be the same size as the target element, barely wrapping it.
+
+## Tooltip Overlay effect
+
+If desired, the tooltip target can be highlighted by fading the application HTML context and enlarging the target when
 the beacon is clicked (see screenshot). To activate this functionality, add the class `tour-overlay` to
-your application root element (i.e. the element that should be faded).
+your application root element (i.e. the element that should be faded). This feature does not work with the inline option, because the target cannot escape its stacking context
 
 ## Development
 

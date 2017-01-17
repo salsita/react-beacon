@@ -5,11 +5,10 @@ import Beacon from '../src/Beacon';
 class Test extends React.Component {
   renderBlock(id) {
     const style = {
+      display: 'inline-block',
       height: '100px',
       width: '100px',
       margin: '10px',
-      position: 'relative',
-      left: '200px',
       backgroundColor: 'red'
     };
     return (<div style={style}>{id}</div>);

@@ -9,8 +9,6 @@ function renderBlock(id) {
       height: '100px',
       width: '100px',
       margin: '10px',
-      position: 'relative',
-      left: '100px',
       backgroundColor: 'red'
     }}>
       <div className="blue" style={{
@@ -31,10 +29,10 @@ class Test extends React.Component { // eslint-disable-line react/no-multi-comp
     return (
       <BeaconConfig>
         <h1>Simple Beacons</h1>
-        <Beacon tooltipText="This is a tooltip">
+        <Beacon tooltipText="This is a tooltip" align={['right', 'middle']}>
           <TestChild />
         </Beacon>
-        <Beacon tooltipText="This is a tooltip 2">
+        <Beacon tooltipText="This is a tooltip 2" inline align={['right', 'middle']}>
           {renderBlock('beacon_2')}
         </Beacon>
         <Beacon tooltipText="This is a tooltip 3">

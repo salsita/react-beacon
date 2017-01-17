@@ -5,6 +5,7 @@ import sha1 from 'sha1';
 import withClickOutside from 'react-onclickoutside';
 import Config from './BeaconConfig';
 import TetherComponent from 'react-tether';
+import cx from 'classnames';
 import '../assets/style.styl';
 
 const TOOLTIP_OVERLAY_CLASS = 'tour-overlay';
@@ -49,12 +50,19 @@ export class Beacon extends Component {
   static propTypes = {
     id: PropTypes.string,
     active: PropTypes.bool,
+    inline: PropTypes.bool,
+    align: PropTypes.arrayOf(PropTypes.string),
     tooltipText: PropTypes.node.isRequired,
     children: React.PropTypes.element.isRequired
   }
 
   static contextTypes = {
-    beacon: PropTypes.object
+    beacon: PropTypes.object,
+    align: null
+  }
+
+  static defaultProps = {
+    inline: false
   }
 
   constructor(props) {
@@ -196,27 +204,49 @@ export class Beacon extends Component {
   }
 
   getVerticalAttachment(bounds, horizontalAttachment) {
-    const marginBottom = window.innerHeight - bounds.bottom;
-    const marginTop = bounds.top;
-    const tolerance = window.innerHeight / TOOLTIP_TOLERANCE_RATIO;
-    if (Math.abs(marginBottom - marginTop) < tolerance && horizontalAttachment !== 'center') {
-      return 'middle';
-    } else if (marginBottom < marginTop) {
-      return 'bottom';
+    // Flip the custom values used by Tether to more convenient user input
+    if (!this.props.inline && this.props.align) {
+      const flipSides = {
+        top: 'bottom',
+        bottom: 'top'
+      };
+      return flipSides[this.props.align[1]] || this.props.align[1];
+    } else if (this.props.align) {
+      return this.props.align[1];
     } else {
-      return 'top';
+      const marginBottom = window.innerHeight - bounds.bottom;
+      const marginTop = bounds.top;
+      const tolerance = window.innerHeight / TOOLTIP_TOLERANCE_RATIO;
+      if (Math.abs(marginBottom - marginTop) < tolerance && horizontalAttachment !== 'center') {
+        return 'middle';
+      } else if (marginBottom < marginTop) {
+        return 'bottom';
+      } else {
+        return 'top';
+      }
     }
   }
 
   getHorizontalAttachment(bounds) {
-    const marginRight = window.innerWidth - bounds.right;
-    const marginLeft = bounds.left;
-    if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
-      return 'left';
-    } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
-      return 'right';
+    // Flip the custom values used by Tether to more convenient user input
+    if (!this.props.inline && this.props.align) {
+      const flipSides = {
+        left: 'right',
+        right: 'left'
+      };
+      return flipSides[this.props.align[0]] || this.props.align[0];
+    } else if (this.props.align) {
+      return this.props.align[0];
     } else {
-      return 'center';
+      const marginRight = window.innerWidth - bounds.right;
+      const marginLeft = bounds.left;
+      if (marginLeft < TOOLTIP_HORIZONTAL_TOLERANCE) {
+        return 'left';
+      } else if (marginRight < TOOLTIP_HORIZONTAL_TOLERANCE) {
+        return 'right';
+      } else {
+        return 'center';
+      }
     }
   }
 
@@ -281,6 +311,7 @@ export class Beacon extends Component {
   }
 
   renderBeacon() {
+    const { inline } = this.props;
     const { hashCheck } = this.state;
     const inactive = this.state.inactive || (this.context.beacon && (this.context.beacon.getActive() === false));
     if (inactive || (hashCheck === HASH_CHECK_PENDING) || (hashCheck === HASH_CHECK_FOUND)) {
@@ -288,63 +319,83 @@ export class Beacon extends Component {
       // Otherwise we need to wait until the hash is set before we render.
       // If it is never set, that means that the user has already
       // clicked on this beacon so we don't display it again.
+      console.log('inactive');
       return Children.toArray(this.props.children)[0];
     }
-    return (
+    return ( !inline ?
       <TetherComponent attachment="middle center" constraints={[{ to: 'window' }]}>
         {this.props.children}
         <tour-beacon data-hash={this.getHash()} ref="beacon" onClick={this.showTooltip}><span /></tour-beacon>
-      </TetherComponent>
+      </TetherComponent> :
+      <inline-beacon>
+        {this.props.children}
+        <tour-beacon data-hash={this.getHash()} ref="beacon" onClick={this.showTooltip}><span /></tour-beacon>
+      </inline-beacon>
     );
   }
 
   renderTooltip() {
+    const { inline } = this.props;
     const { appRoot, appRootClassName, tooltipActive } = this.state;
-
-    if (appRoot) {
-      const oldClone = document.getElementById(TARGET_CLONE_ID);
-      if (!tooltipActive && oldClone && oldClone.className !== 'tour-clone') {
-        oldClone.className = 'tour-clone';
-        oldClone.addEventListener('transitionend', () => {
-          oldClone.parentNode.removeChild(oldClone);
-          // Remember that we hid the tooltip so we don't use the `tour-out` class anymore
-          this.setState({ tooltipHidden: true });
-        }
-        , false);
-      }
-      // If the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
-      // then we fade out the background and highlight the target element of the tooltip.
-      if (tooltipActive) {
-        if (!oldClone) {
-          appRoot.className = `${TOOLTIP_FADED_CLASS} ${appRootClassName}`;
-          const targetClone = this.getTargetClone();
-          document.body.appendChild(targetClone);
-        }
-      } else {
-        appRoot.className = appRootClassName;
-      }
-    }
-
     const tooltipClass = tooltipActive ? 'tour-in' : (!this.state.tooltipHidden && 'tour-out') || 'inactive';
 
-    const baseProps = {
-      attachment: `${this.state.tooltipAttachmentVertical} ${this.state.tooltipAttachmentHorizontal}`,
-      classes: { target: 'tether-target-tooltip' },
-      constraints: [{ to: 'scrollParent', pin: true }],
-      offset: this.getTooltipOffset()
-    };
+    if (!inline) {
+      if (appRoot) {
+        const oldClone = document.getElementById(TARGET_CLONE_ID);
+        if (!tooltipActive && oldClone && oldClone.className !== 'tour-clone') {
+          oldClone.className = 'tour-clone';
+          oldClone.addEventListener('transitionend', () => {
+            oldClone.parentNode.removeChild(oldClone);
+            // Remember that we hid the tooltip so we don't use the `tour-out` class anymore
+            this.setState({ tooltipHidden: true });
+          }
+          , false);
+        }
+        // If the user specified an app root using the `TOOLTIP_OVERLAY_CLASS`
+        // then we fade out the background and highlight the target element of the tooltip.
+        if (tooltipActive) {
+          if (!oldClone) {
+            appRoot.className = `${TOOLTIP_FADED_CLASS} ${appRootClassName}`;
+            const targetClone = this.getTargetClone();
+            document.body.appendChild(targetClone);
+          }
+        } else {
+          appRoot.className = appRootClassName;
+        }
+      }
+      const baseProps = {
+        attachment: `${this.state.tooltipAttachmentVertical} ${this.state.tooltipAttachmentHorizontal}`,
+        classes: { target: 'tether-target-tooltip' },
+        constraints: [{ to: 'scrollParent', pin: true }],
+        offset: this.getTooltipOffset()
+      };
+      const tetherProps = tooltipActive ? { ...baseProps } : { ...baseProps, enabled: false };
 
-    const tetherProps = tooltipActive ? { ...baseProps } : { ...baseProps, enabled: false };
-    return (this.state.tooltipAttachmentVertical &&
-      <TetherComponent {...tetherProps}>
-        {this.props.children}
-        <tour-tooltip class={tooltipClass} ref="tooltip">
-          {this.props.tooltipText}
-          {this.context.beacon && <tour-settings onClick={this.handleDontShow}>Don't show hints</tour-settings>}
-          <tour-tooltip-arrow ref="tooltipArrow" style={this.state.arrowPosition} />
-        </tour-tooltip>
-      </TetherComponent>
-    );
+      return (this.state.tooltipAttachmentVertical &&
+        <TetherComponent {...tetherProps}>
+          {this.props.children}
+          <tour-tooltip class={tooltipClass} ref="tooltip">
+            {this.props.tooltipText}
+            {this.context.beacon && <tour-settings onClick={this.handleDontShow}>Don't show hints</tour-settings>}
+            <tour-tooltip-arrow ref="tooltipArrow" style={this.state.arrowPosition} />
+          </tour-tooltip>
+        </TetherComponent>
+      );
+    } else {
+      return (this.state.tooltipAttachmentVertical &&
+        <inline-beacon class={cx(
+          `tether-target-attached-${this.state.tooltipAttachmentVertical}`,
+          `tether-target-attached-${this.state.tooltipAttachmentHorizontal}`,
+          {'tour-highlighted-inline': tooltipActive})}>
+          {this.props.children}
+          <tour-tooltip class={tooltipClass} ref="tooltip">
+            {this.props.tooltipText}
+            {this.context.beacon && <tour-settings onClick={this.handleDontShow}>Don't show hints</tour-settings>}
+            <tour-tooltip-arrow ref="tooltipArrow" style={this.state.arrowPosition} />
+          </tour-tooltip>
+        </inline-beacon>
+      );
+    }
   }
 
   render() {
